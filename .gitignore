@@ -1,0 +1,9 @@
+.vscode/
+vendor/
+node_modules/
+archivos/
+projects_files/
+.env
+package-lock.json
+composer.lock
+package-lock.json
