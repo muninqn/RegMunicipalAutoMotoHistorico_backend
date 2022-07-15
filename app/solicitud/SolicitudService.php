@@ -44,7 +44,7 @@ class SolicitudService
         $params['fabricacion'] = ($params['fabricacion'] === "null") ? null : formatearFechaAceptadaPorLaCuarentona($params['fabricacion']);
         $params['otros'] = ($params['otros'] === "null") ? null : $params['otros'];
         $params['partesNoOriginales'] = ($params['partesNoOriginales'] === "null") ? null : $params['partesNoOriginales'];
-        
+
         $bindParams = [$params['vecino_id'], $estadoInicial, $params['marca'], $params['tipo'], $params['modelo'], $params['motor'], $params['chasis'], $params['fabricacion'], $params['historia'], $params['otros'], $params['partesNoOriginales']];
 
         $database = new BaseDatos;
@@ -79,6 +79,27 @@ class SolicitudService
         $database->connect();
         return $database->ejecutarSqlUpdateDelete($sqlQuery, $bindParams);
     }
+    public function updateEstadoSolcitud($params)
+    {
+        if ($params["estado"] === "APROBAR") {
+            $estado = 2;
+        }
+        if ($params["estado"] === "RECHAZAR") {
+            $estado = 3;
+        }
+        if ($params["estado"] === "CORREGIR") {
+            $estado = 4;
+        }
+        if ($params["estado"] === "CANCELAR") {
+            $estado = 5;
+        }
+        $sqlQuery = "UPDATE RMAMH_Solicitud SET estado_id=?, patente=? WHERE id_solicitud=? AND deleted_at IS NULL";
+        $bindParams = [$estado, $params["patente"], $params["solicitud"]];
+
+        $database = new BaseDatos;
+        $database->connect();
+        return $database->ejecutarSqlUpdateDelete($sqlQuery, $bindParams);
+    }
 
     public function selectSolicitudes()
     {
@@ -99,6 +120,17 @@ class SolicitudService
         INNER JOIN RMAMH_Solicitud ON RMAMH_Solicitud.vecino_id = RMAMH_Vecino.id_vecino
         WHERE id_solicitud=? AND deleted_at is null";
         $bindParams = [$params['id_solicitud']];
+
+        $database = new BaseDatos;
+        $database->connect();
+        return $database->ejecutarSqlSelect($sqlQuery, $bindParams);
+    }
+    public function buscarPatente($params)
+    {
+        $sqlQuery = "SELECT patente
+        FROM RMAMH_Solicitud
+        WHERE patente=? AND deleted_at is null";
+        $bindParams = [$params['patente']];
 
         $database = new BaseDatos;
         $database->connect();

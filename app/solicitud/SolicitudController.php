@@ -72,7 +72,7 @@ class SolicitudController extends BaseController
                                 // Obtenemos el archivo y lo convertimos a base64
                                 $fileData = file_get_contents($value);
                                 $base64File = "data:$fileMimeType;base64," . base64_encode($fileData);
-                                $arrSolicitudes[$key]=$base64File;
+                                $arrSolicitudes[$key] = $base64File;
                             }
                         }
                     }
@@ -83,6 +83,29 @@ class SolicitudController extends BaseController
                 $response['headers'] = ['HTTP/1.1 200 OK'];
             } else {
                 $response = crearRespuestaSolicitud(400, "error", "Falta especificar parametro id_solicitud.");
+            }
+        } else {
+            $response = crearRespuestaSolicitud(400, "error", "Metodo HTTP equivocado.");
+        }
+        return $response;
+    }
+
+    private function aprobarSolicitud($params)
+    {
+        if ($this->getRequestMethod() == "POST") {
+            $objService = new SolicitudService;
+            $exitePatente=$objService->buscarPatente($params);
+            if (!isset($exitePatente)) {
+                # code...
+                $estadoSolicitud = $objService->updateEstadoSolcitud($params);
+                if ($estadoSolicitud != 0) {
+                    $response = crearRespuestaSolicitud(200, "OK", "Se Aprobó la solicitud correctamente", $estadoSolicitud);
+                } else {
+                    $response = crearRespuestaSolicitud(400, "Error", "No se pudo actualiar la solicitud");
+                }
+                $response['headers'] = ['HTTP/1.1 200 OK'];
+            }else{
+                $response = crearRespuestaSolicitud(400, "error", "Ya existe la patente asignada.");
             }
         } else {
             $response = crearRespuestaSolicitud(400, "error", "Metodo HTTP equivocado.");
