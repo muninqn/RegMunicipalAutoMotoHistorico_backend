@@ -94,7 +94,7 @@ class SolicitudController extends BaseController
     {
         if ($this->getRequestMethod() == "POST") {
             $objService = new SolicitudService;
-            $exitePatente=$objService->buscarPatente($params);
+            $exitePatente = $objService->buscarPatente($params);
             if (!isset($exitePatente)) {
                 # code...
                 $estadoSolicitud = $objService->updateEstadoSolcitud($params);
@@ -104,9 +104,41 @@ class SolicitudController extends BaseController
                     $response = crearRespuestaSolicitud(400, "Error", "No se pudo actualiar la solicitud");
                 }
                 $response['headers'] = ['HTTP/1.1 200 OK'];
-            }else{
+            } else {
                 $response = crearRespuestaSolicitud(400, "error", "Ya existe la patente asignada.");
             }
+        } else {
+            $response = crearRespuestaSolicitud(400, "error", "Metodo HTTP equivocado.");
+        }
+        return $response;
+    }
+    private function revisarSolicitud($params)
+    {
+        if ($this->getRequestMethod() == "POST") {
+            $objService = new SolicitudService;
+            $estadoSolicitud = $objService->updateEstadoSolcitud($params);
+            if ($estadoSolicitud != 0) {
+                $response = crearRespuestaSolicitud(200, "OK", "La solicitud se ha enviado para su revision correctamente.", $estadoSolicitud);
+            } else {
+                $response = crearRespuestaSolicitud(400, "Error", "No se ha podido enviar la solicitud para su revision.");
+            }
+            $response['headers'] = ['HTTP/1.1 200 OK'];
+        } else {
+            $response = crearRespuestaSolicitud(400, "error", "Metodo HTTP equivocado.");
+        }
+        return $response;
+    }
+    private function rechazarSolicitud($params)
+    {
+        if ($this->getRequestMethod() == "POST") {
+            $objService = new SolicitudService;
+            $estadoSolicitud = $objService->updateEstadoSolcitud($params);
+            if ($estadoSolicitud != 0) {
+                $response = crearRespuestaSolicitud(200, "OK", "La solicitud ha rechazado correctamente.", $estadoSolicitud);
+            } else {
+                $response = crearRespuestaSolicitud(400, "Error", "No se ha podido rechazar la solicitud.");
+            }
+            $response['headers'] = ['HTTP/1.1 200 OK'];
         } else {
             $response = crearRespuestaSolicitud(400, "error", "Metodo HTTP equivocado.");
         }

@@ -83,18 +83,25 @@ class SolicitudService
     {
         if ($params["estado"] === "APROBAR") {
             $estado = 2;
+            $sqlQuery = "UPDATE RMAMH_Solicitud SET estado_id=?, patente=? WHERE id_solicitud=? AND deleted_at IS NULL";
+            $bindParams = [$estado, $params["patente"], $params["solicitud"]];
         }
         if ($params["estado"] === "RECHAZAR") {
             $estado = 3;
+
+            $sqlQuery = "UPDATE RMAMH_Solicitud SET estado_id=?,deleted_at=CURRENT_TIMESTAMP WHERE id_solicitud=? AND deleted_at IS NULL";
+            $bindParams = [$estado, $params["solicitud"]];
         }
         if ($params["estado"] === "CORREGIR") {
             $estado = 4;
+            $sqlQuery = "UPDATE RMAMH_Solicitud SET estado_id=?, observacion=? WHERE id_solicitud=? AND deleted_at IS NULL";
+            $bindParams = [$estado, $params["observacion"], $params["solicitud"]];
         }
         if ($params["estado"] === "CANCELAR") {
             $estado = 5;
         }
-        $sqlQuery = "UPDATE RMAMH_Solicitud SET estado_id=?, patente=? WHERE id_solicitud=? AND deleted_at IS NULL";
-        $bindParams = [$estado, $params["patente"], $params["solicitud"]];
+
+
 
         $database = new BaseDatos;
         $database->connect();
