@@ -35,23 +35,136 @@ class SolicitudService
 
     public function insertSolicitud($params)
     {
-        $fechaFabricacion = formatearFechaAceptadaPorLaCuarentona($params['fabricacion']);
         $sqlQuery = "INSERT INTO RMAMH_Solicitud (vecino_id, estado_id, marca, tipo, modelo, motor, chasis, fecha_fabricacion, caracteristicas_historia, otros, partes_no_originales) VALUES(?,?,?,?,?,?,?,?,?,?,?)";
         $estadoInicial = 1;
+        $params['modelo'] = ($params['modelo'] === "undefined") ? null : $params['modelo'];
+        $params['motor'] = ($params['motor'] === "undefined") ? null : $params['motor'];
+        $params['chasis'] = ($params['chasis'] === "undefined") ? null : $params['chasis'];
+        $params['fecha_fabricacion'] = ($params['fecha_fabricacion'] === "undefined") ? null : $params['fecha_fabricacion'];
+        $params['otros'] = ($params['otros'] === "undefined") ? null : $params['otros'];
+        $params['partes_no_originales'] = ($params['partes_no_originales'] === "undefined") ? null : $params['partes_no_originales'];
+
+        $bindParams = [$params['vecino_id'], $estadoInicial, $params['marca'], $params['tipo'], $params['modelo'], $params['motor'], $params['chasis'], $params['fecha_fabricacion'], $params['caracteristicas_historia'], $params['otros'], $params['partes_no_originales']];
+
+        $database = new BaseDatos;
+        $database->connect();
+        return $database->ejecutarSqlInsert($sqlQuery, $bindParams);
+    }
+    public function updateRevisionSolicitud($params, $historial)
+    {
+        #= ?, modified_at = CURRENT_TIMESTAMP WHERE id_tramite=? and deleted_at IS NULL
+        $sqlQuery = "UPDATE RMAMH_Solicitud SET estado_id=?";
+
         $params['modelo'] = ($params['modelo'] === "null") ? null : $params['modelo'];
         $params['motor'] = ($params['motor'] === "null") ? null : $params['motor'];
         $params['chasis'] = ($params['chasis'] === "null") ? null : $params['chasis'];
-        $params['fabricacion'] = ($params['fabricacion'] === "null") ? null : formatearFechaAceptadaPorLaCuarentona($params['fabricacion']);
+        $params['fecha_fabricacion'] = ($params['fecha_fabricacion'] === "null") ? null : $params['fecha_fabricacion'];
         $params['otros'] = ($params['otros'] === "null") ? null : $params['otros'];
-        $params['partesNoOriginales'] = ($params['partesNoOriginales'] === "null") ? null : $params['partesNoOriginales'];
+        $params['partes_no_originales'] = ($params['partes_no_originales'] === "null") ? null : $params['partes_no_originales'];
+        $estadoInicial=1;
+        $bindParams=[$estadoInicial];
+        foreach ($historial as $key => $value) {
+            if (array_key_exists($key, $params)) {
+                if (!($key === 'estado_id')) {
 
-        $bindParams = [$params['vecino_id'], $estadoInicial, $params['marca'], $params['tipo'], $params['modelo'], $params['motor'], $params['chasis'], $params['fabricacion'], $params['historia'], $params['otros'], $params['partesNoOriginales']];
+                    if ($historial[$key] !== $params[$key]) {
+                        $sqlQuery .= ", $key=?";
+                        array_push($bindParams, $params[$key]);
+                    }
+                }
+            }
+        }
+        array_push($bindParams, $params['id_solicitud']);
+        $sqlQuery.=", modified_at = CURRENT_TIMESTAMP WHERE id_solicitud=? and deleted_at IS NULL";
+        // var_dump($sqlQuery);
+        // var_dump($bindParams);
+        // die();
+        // $sqlQuery = "INSERT INTO RMAMH_Solicitud (vecino_id, estado_id, marca, tipo, modelo, motor, chasis, fecha_fabricacion, caracteristicas_historia, otros, partes_no_originales) VALUES(?,?,?,?,?,?,?,?,?,?,?)";
+        // $bindParams = [$params['vecino_id'], $estadoInicial, $params['marca'], $params['tipo'], $params['modelo'], $params['motor'], $params['chasis'], $params['fecha_fabricacion'], $params['caracteristicas_historia'], $params['otros'], $params['partes_no_originales']];
+
+        $database = new BaseDatos;
+        $database->connect();
+        return $database->ejecutarSqlUpdateDelete($sqlQuery, $bindParams);
+    }
+    public function insertSolicitudHistorico($params)
+    {
+        $sqlQuery = "INSERT INTO RMAMH_SolicitudHistorico (solicitud_id,vecino_id, estado_id, marca, tipo, modelo, motor, chasis, fecha_fabricacion, caracteristicas_historia, otros, partes_no_originales) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)";
+
+        $bindParams = [$params['id_solicitud'], $params['vecino_id'], $params['estado_id'], $params['marca'], $params['tipo'], $params['modelo'], $params['motor'], $params['chasis'], $params['fecha_fabricacion'], $params['caracteristicas_historia'], $params['otros'], $params['partes_no_originales']];
 
         $database = new BaseDatos;
         $database->connect();
         return $database->ejecutarSqlInsert($sqlQuery, $bindParams);
     }
 
+    public function updatePathSolcituModificacion($idSolicitud, $arrPath)
+    {
+        $sqlQuery = "UPDATE RMAMH_Solicitud SET";
+        $bindParams = [];
+        // var_dump(count($bindParams) === 0);
+        // die();
+        if (array_key_exists('decjurada', $arrPath)) {
+            if (count($bindParams) === 0) {
+                $sqlQuery .= " path_declaracion_jurada=?";
+            }else{
+                $sqlQuery .= " ,path_declaracion_jurada=?";
+            }
+            array_push($bindParams, $arrPath['decjurada']);
+        }
+        if (array_key_exists('foto0', $arrPath)) {
+            if (count($bindParams) === 0) {
+                $sqlQuery .= " path_fotografia1=?";
+            }else{
+                $sqlQuery .= " ,path_fotografia1=?";
+            }
+            
+            array_push($bindParams, $arrPath['foto0']);
+        }
+        if (array_key_exists('fileTitulo', $arrPath)) {
+            if (count($bindParams) === 0) {
+                $sqlQuery .= " path_titulo=?";
+            }else{
+                $sqlQuery .= " ,path_titulo=?";
+            }
+            
+            array_push($bindParams, $arrPath['fileTitulo']);
+        }
+        if (array_key_exists('fileBoleto', $arrPath)) {
+            if (count($bindParams) === 0) {
+                $sqlQuery .= " path_boleto_compra=?";
+            }else{
+                $sqlQuery .= " ,path_boleto_compra=?";
+            }
+            $sqlQuery .= " ,path_boleto_compra=?";
+            array_push($bindParams, $arrPath['fileBoleto']);
+        }
+        if (array_key_exists('foto1', $arrPath)) {
+            if (count($bindParams) === 0) {
+                $sqlQuery .= " path_fotografia2=?";
+            }else{
+                $sqlQuery .= " ,path_fotografia2=?";
+            }
+            array_push($bindParams, $arrPath['foto1']);
+        }
+        if (array_key_exists('foto2', $arrPath)) {
+            if (count($bindParams) === 0) {
+                $sqlQuery .= " path_fotografia3=?";
+            }else{
+                $sqlQuery .= " ,path_fotografia3=?";
+            }
+            array_push($bindParams, $arrPath['foto2']);
+        }
+        
+        $sqlQuery .= " WHERE id_solicitud=? AND deleted_at IS NULL";
+        array_push($bindParams, $idSolicitud);
+        // var_dump($sqlQuery);
+        // var_dump($bindParams);
+        // die();
+
+        $database = new BaseDatos;
+        $database->connect();
+        return $database->ejecutarSqlUpdateDelete($sqlQuery, $bindParams);
+    }
     public function updatePathSolcitud($idSolicitud, $arrPath)
     {
         $sqlQuery = "UPDATE RMAMH_Solicitud SET path_declaracion_jurada=?,path_fotografia1=?";
@@ -93,12 +206,14 @@ class SolicitudService
             $bindParams = [$estado, $params["solicitud"]];
         }
         if ($params["estado"] === "CORREGIR") {
-            $estado = 4;
+            $estado = 5;
             $sqlQuery = "UPDATE RMAMH_Solicitud SET estado_id=?, observacion=? WHERE id_solicitud=? AND deleted_at IS NULL";
             $bindParams = [$estado, $params["observacion"], $params["solicitud"]];
         }
         if ($params["estado"] === "CANCELAR") {
-            $estado = 5;
+            $estado = 3;
+            $sqlQuery = "UPDATE RMAMH_Solicitud SET estado_id=?,deleted_at=CURRENT_TIMESTAMP WHERE id_solicitud=? AND deleted_at IS NULL";
+            $bindParams = [$estado, $params["solicitud"]];
         }
 
 
@@ -110,27 +225,55 @@ class SolicitudService
 
     public function selectSolicitudes()
     {
-        $sqlQuery = "SELECT id_solicitud,nombre,apellido,estado_id
+        $sqlQuery = "SELECT id_solicitud,nombre,apellido,documento,estado_id
         FROM RMAMH_Vecino
-        INNER JOIN RMAMH_Solicitud ON RMAMH_Solicitud.vecino_id = RMAMH_Vecino.id_vecino
-        WHERE deleted_at is null";
+        INNER JOIN RMAMH_Solicitud ON RMAMH_Solicitud.vecino_id = RMAMH_Vecino.id_vecino";
+        //WHERE deleted_at is null
         $bindParams = [];
 
         $database = new BaseDatos;
         $database->connect();
         return $database->ejecutarSqlSelectListar($sqlQuery, $bindParams);
     }
+
     public function selectSolicitudPorID($params)
     {
         $sqlQuery = "SELECT *
         FROM RMAMH_Vecino
         INNER JOIN RMAMH_Solicitud ON RMAMH_Solicitud.vecino_id = RMAMH_Vecino.id_vecino
-        WHERE id_solicitud=? AND deleted_at is null";
+        WHERE id_solicitud=?";
+        //AND deleted_at is null
         $bindParams = [$params['id_solicitud']];
 
         $database = new BaseDatos;
         $database->connect();
         return $database->ejecutarSqlSelect($sqlQuery, $bindParams);
+    }
+    public function verificarSolicitudUsuario($params)
+    {
+        $sqlQuery = "SELECT *
+        FROM RMAMH_Vecino
+        INNER JOIN RMAMH_Solicitud ON RMAMH_Solicitud.vecino_id = RMAMH_Vecino.id_vecino
+        WHERE documento=?";
+        // AND deleted_at is null
+        $bindParams = [$params['documento']];
+
+        $database = new BaseDatos;
+        $database->connect();
+        return $database->ejecutarSqlSelect($sqlQuery, $bindParams);
+    }
+    public function verificarSolicitudesUsuario($params)
+    {
+        $sqlQuery = "SELECT id_solicitud,nombre,apellido,estado_id
+        FROM RMAMH_Vecino
+        INNER JOIN RMAMH_Solicitud ON RMAMH_Solicitud.vecino_id = RMAMH_Vecino.id_vecino
+        WHERE documento=?";
+        //AND deleted_at is null
+        $bindParams = [$params['documento']];
+
+        $database = new BaseDatos;
+        $database->connect();
+        return $database->ejecutarSqlSelectListar($sqlQuery, $bindParams);
     }
     public function buscarPatente($params)
     {
