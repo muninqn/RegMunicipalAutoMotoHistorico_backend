@@ -21,20 +21,22 @@ ini_set('memory_limit', '256M');
 //verificamos que se obtenga el SESSIONKEY
 // var_dump($bodyParamsArray);
 // var_dump($bodyParamsArray["SESSIONKEY"]);
-$puedePasar = (isset($bodyParamsArray["action"]) && $bodyParamsArray["action"] === 55) ? false : true;
-if (!isset($bodyParamsArray['SESSIONKEY']) || $bodyParamsArray['SESSIONKEY'] == '') {
-    $response = crearRespuestaSolicitud(401, "error", "Acceso denegado. Usted no tiene permisos para ejecutar esta peticion.");
-    $response['headers'] = [
-        "HTTP/1.1 401 Unauthorized",
-        'WWW-Authenticate: Basic realm="Acceso a recurso protegido"',
-    ];
-    retornarRespuestaSolicitud($response);
-} else {
+$puedePasar = (isset($bodyParamsArray["action"]) && $bodyParamsArray["action"] === 55) ? true : false;
+// 
+
+if ($puedePasar) {
+    // $response = crearRespuestaSolicitud(401, "error", "Acceso denegado. Usted no tiene permisos para ejecutar esta peticion.");
+    // $response['headers'] = [
+    //     "HTTP/1.1 401 Unauthorized",
+    //     'WWW-Authenticate: Basic realm="Acceso a recurso protegido"',
+    // ];
+    // retornarRespuestaSolicitud($response);
+// } else {
     //verificamos que el usuario sea un usuario valido y obtenemos sus permisos
-    $authController = new AuthController();
+    // $authController = new AuthController();
     // if (($userData = $authController->getUserData($bodyParamsArray['SESSIONKEY'], (PROD ? 83 : 80))) != null) {
 
-    if (($userData = $authController->getUserData($bodyParamsArray['SESSIONKEY'])) != null) {
+    // if (($userData = $authController->getUserData($bodyParamsArray['SESSIONKEY'])) != null) {
         //obtenemos los nombres del controller y el metodo desde la url
         $URL = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
         $URL = explode('/', $URL);
@@ -53,13 +55,13 @@ if (!isset($bodyParamsArray['SESSIONKEY']) || $bodyParamsArray['SESSIONKEY'] == 
                     // $idTramiteUser = $objTramiteService->obtenerIdTramitePersona($userData['referenciaID']);
 
                     //seteamos los datos recurrentes a usar durante la ejecucion de la peticion
-                    if (isset($userData["perfilUsuario"])) {
-                        $controller->setPerfilUsuario($userData["perfilUsuario"]);
-                    }
+                    // if (isset($userData["perfilUsuario"])) {
+                    //     $controller->setPerfilUsuario($userData["perfilUsuario"]);
+                    // }
                     // if (isset($idTramiteUser['id_tramite'])) {
                     //     $controller->setIdTramite($idTramiteUser['id_tramite']);
                     // }
-                    $controller->setIdWapPersona($userData['referenciaID']);
+                    // $controller->setIdWapPersona($userData['referenciaID']);
                     $controller->setRequestMethod($requestMethod);
 
                     //ejecutamos y capturamos el resultado de la peticion
@@ -76,9 +78,11 @@ if (!isset($bodyParamsArray['SESSIONKEY']) || $bodyParamsArray['SESSIONKEY'] == 
             // Si no existe el modulo, retornamos la respuesta
             $response = getArrayNotFound("No se especifico el modulo a llamar.");
         }
-    } else {
+    // } else {
+    //     //el usuario no fue encontrado con el sessionkey obtenido
+    //     $response = getArrayNotFound("El usuario indicado no es valido.");
+    }else{
         //el usuario no fue encontrado con el sessionkey obtenido
-        $response = getArrayNotFound("El usuario indicado no es valido.");
+        $response = getArrayNotFound("Action invalido.");
     }
     retornarRespuestaSolicitud($response);
-}
