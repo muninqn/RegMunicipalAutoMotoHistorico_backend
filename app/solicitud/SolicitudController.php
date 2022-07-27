@@ -49,7 +49,6 @@ class SolicitudController extends BaseController
                 $arrSolicitudes = $objService->selectSolicitudPorID($params);
                 if (isset($arrSolicitudes)) {
                     $arrSolicitudes["fecha_nacimiento"] = date("d-m-Y", strtotime($arrSolicitudes["fecha_nacimiento"]));
-                    $arrSolicitudes["fecha_fabricacion"] = date("d-m-Y", strtotime($arrSolicitudes["fecha_fabricacion"]));
                     // $arrContextOptions = array(
                     //     "ssl" => array(
                     //         "verify_peer" => false,
@@ -128,6 +127,7 @@ class SolicitudController extends BaseController
         }
         return $response;
     }
+
     private function rechazarSolicitud($params)
     {
         if ($this->getRequestMethod() == "POST") {
@@ -144,6 +144,74 @@ class SolicitudController extends BaseController
         }
         return $response;
     }
+    private function buscarSolicitudPorUsuario($params)
+    {
+        if ($this->getRequestMethod() == "POST") {
+            if ($params["documento"]) {
+                $objService = new SolicitudService;
+                $unaSolicitud = $objService->verificarSolicitudUsuario($params);
+                if (isset($unaSolicitud)) {
+                    $unaSolicitud["fecha_nacimiento"] = date("d-m-Y", strtotime($unaSolicitud["fecha_nacimiento"]));
+                    // $arrContextOptions = array(
+                    //     "ssl" => array(
+                    //         "verify_peer" => false,
+                    //         "verify_peer_name" => false,
+                    //     ),
+                    // );
+                    // $response = file_get_contents($arrSolicitudes["path_declaracion_jurada"], false, stream_context_create($arrContextOptions));
+                    foreach ($unaSolicitud as $key => $value) {
+                        if ($key === "path_declaracion_jurada" || $key === "path_titulo" || $key === "path_boleto_compra" || $key === "path_fotografia1" || $key === "path_fotografia2" || $key === "path_fotografia3") {
+                            if ($value !== null) {
+                                $fileExtension = pathinfo($value, PATHINFO_EXTENSION);
+
+                                // Definimos el tipo de archivo
+                                if ($fileExtension == "pdf") {
+                                    $fileMimeType = "application/" . $fileExtension;
+                                } else {
+                                    $fileMimeType = "image/" . $fileExtension;
+                                }
+
+                                // Obtenemos el archivo y lo convertimos a base64
+                                $fileData = file_get_contents($value);
+                                $base64File = "data:$fileMimeType;base64," . base64_encode($fileData);
+                                $unaSolicitud[$key] = $base64File;
+                            }
+                        }
+                    }
+                    $response = crearRespuestaSolicitud(200, "OK", "Existe solicitud vigente", $unaSolicitud);
+                } else {
+                    $response = crearRespuestaSolicitud(400, "Error", "No existe solicitud vigente");
+                }
+                $response['headers'] = ['HTTP/1.1 200 OK'];
+            } else {
+                $response = crearRespuestaSolicitud(400, "error", "Falta especificar parametros.");
+            }
+        } else {
+            $response = crearRespuestaSolicitud(400, "error", "Metodo HTTP equivocado.");
+        }
+        return $response;
+    }
+    private function buscarSolicitudesDelUsuario($params)
+    {
+        if ($this->getRequestMethod() == "POST") {
+            if ($params["documento"]) {
+                $objService = new SolicitudService;
+                $solicitudes = $objService->verificarSolicitudesUsuario($params);
+                if (isset($solicitudes)) {
+                    $response = crearRespuestaSolicitud(200, "OK", "Existe solicitud vigente", $solicitudes);
+                } else {
+                    $response = crearRespuestaSolicitud(400, "Error", "No existe solicitud vigente");
+                }
+                $response['headers'] = ['HTTP/1.1 200 OK'];
+            } else {
+                $response = crearRespuestaSolicitud(400, "error", "Falta especificar parametros.");
+            }
+        } else {
+            $response = crearRespuestaSolicitud(400, "error", "Metodo HTTP equivocado.");
+        }
+        return $response;
+    }
+
     // private function verificarPreTurnoExistente($params)
     // {
     //     if ($this->getRequestMethod() == "POST") {
