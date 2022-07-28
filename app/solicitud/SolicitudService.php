@@ -37,12 +37,12 @@ class SolicitudService
     {
         $sqlQuery = "INSERT INTO RMAMH_Solicitud (vecino_id, estado_id, marca, tipo, modelo, motor, chasis, fecha_fabricacion, caracteristicas_historia, otros, partes_no_originales) VALUES(?,?,?,?,?,?,?,?,?,?,?)";
         $estadoInicial = 1;
-        $params['modelo'] = ($params['modelo'] === "undefined") ? null : $params['modelo'];
-        $params['motor'] = ($params['motor'] === "undefined") ? null : $params['motor'];
-        $params['chasis'] = ($params['chasis'] === "undefined") ? null : $params['chasis'];
-        $params['fecha_fabricacion'] = ($params['fecha_fabricacion'] === "undefined") ? null : $params['fecha_fabricacion'];
-        $params['otros'] = ($params['otros'] === "undefined") ? null : $params['otros'];
-        $params['partes_no_originales'] = ($params['partes_no_originales'] === "undefined") ? null : $params['partes_no_originales'];
+        $params['modelo'] = ($params['modelo'] === "null") ? null : $params['modelo'];
+        $params['motor'] = ($params['motor'] === "null") ? null : $params['motor'];
+        $params['chasis'] = ($params['chasis'] === "null") ? null : $params['chasis'];
+        $params['fecha_fabricacion'] = ($params['fecha_fabricacion'] === "null") ? null : $params['fecha_fabricacion'];
+        $params['otros'] = ($params['otros'] === "null") ? null : $params['otros'];
+        $params['partes_no_originales'] = ($params['partes_no_originales'] === "null") ? null : $params['partes_no_originales'];
 
         $bindParams = [$params['vecino_id'], $estadoInicial, $params['marca'], $params['tipo'], $params['modelo'], $params['motor'], $params['chasis'], $params['fecha_fabricacion'], $params['caracteristicas_historia'], $params['otros'], $params['partes_no_originales']];
 
