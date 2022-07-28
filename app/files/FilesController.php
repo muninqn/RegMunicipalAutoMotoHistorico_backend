@@ -105,6 +105,8 @@ class FilesController extends BaseController
                         $insertVecino = $objServiceVecino->obtenerIdVecino($params);
                         if(!isset($insertVecino)){
                             $insertVecino = $objServiceVecino->insertVecino($params);
+                        }else{
+                            $insertVecino=$insertVecino["id_vecino"];
                         }
                         if ($insertVecino != -1) {
                             $params['vecino_id'] = $insertVecino;
