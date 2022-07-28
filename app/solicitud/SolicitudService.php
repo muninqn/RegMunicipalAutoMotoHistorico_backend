@@ -61,8 +61,8 @@ class SolicitudService
         $params['fecha_fabricacion'] = ($params['fecha_fabricacion'] === "null") ? null : $params['fecha_fabricacion'];
         $params['otros'] = ($params['otros'] === "null") ? null : $params['otros'];
         $params['partes_no_originales'] = ($params['partes_no_originales'] === "null") ? null : $params['partes_no_originales'];
-        $estadoInicial=1;
-        $bindParams=[$estadoInicial];
+        $estadoInicial = 1;
+        $bindParams = [$estadoInicial];
         foreach ($historial as $key => $value) {
             if (array_key_exists($key, $params)) {
                 if (!($key === 'estado_id')) {
@@ -75,7 +75,8 @@ class SolicitudService
             }
         }
         array_push($bindParams, $params['id_solicitud']);
-        $sqlQuery.=", modified_at = CURRENT_TIMESTAMP WHERE id_solicitud=? and deleted_at IS NULL";
+        $sqlQuery .= ", modified_at = CURRENT_TIMESTAMP WHERE id_solicitud=? and deleted_at IS NULL";
+
         // var_dump($sqlQuery);
         // var_dump($bindParams);
         // die();
@@ -99,6 +100,7 @@ class SolicitudService
 
     public function updatePathSolcituModificacion($idSolicitud, $arrPath)
     {
+
         $sqlQuery = "UPDATE RMAMH_Solicitud SET";
         $bindParams = [];
         // var_dump(count($bindParams) === 0);
@@ -106,7 +108,7 @@ class SolicitudService
         if (array_key_exists('decjurada', $arrPath)) {
             if (count($bindParams) === 0) {
                 $sqlQuery .= " path_declaracion_jurada=?";
-            }else{
+            } else {
                 $sqlQuery .= " ,path_declaracion_jurada=?";
             }
             array_push($bindParams, $arrPath['decjurada']);
@@ -114,34 +116,33 @@ class SolicitudService
         if (array_key_exists('foto0', $arrPath)) {
             if (count($bindParams) === 0) {
                 $sqlQuery .= " path_fotografia1=?";
-            }else{
+            } else {
                 $sqlQuery .= " ,path_fotografia1=?";
             }
-            
+
             array_push($bindParams, $arrPath['foto0']);
         }
         if (array_key_exists('fileTitulo', $arrPath)) {
             if (count($bindParams) === 0) {
                 $sqlQuery .= " path_titulo=?";
-            }else{
+            } else {
                 $sqlQuery .= " ,path_titulo=?";
             }
-            
+
             array_push($bindParams, $arrPath['fileTitulo']);
         }
         if (array_key_exists('fileBoleto', $arrPath)) {
             if (count($bindParams) === 0) {
                 $sqlQuery .= " path_boleto_compra=?";
-            }else{
+            } else {
                 $sqlQuery .= " ,path_boleto_compra=?";
             }
-            $sqlQuery .= " ,path_boleto_compra=?";
             array_push($bindParams, $arrPath['fileBoleto']);
         }
         if (array_key_exists('foto1', $arrPath)) {
             if (count($bindParams) === 0) {
                 $sqlQuery .= " path_fotografia2=?";
-            }else{
+            } else {
                 $sqlQuery .= " ,path_fotografia2=?";
             }
             array_push($bindParams, $arrPath['foto1']);
@@ -149,17 +150,14 @@ class SolicitudService
         if (array_key_exists('foto2', $arrPath)) {
             if (count($bindParams) === 0) {
                 $sqlQuery .= " path_fotografia3=?";
-            }else{
+            } else {
                 $sqlQuery .= " ,path_fotografia3=?";
             }
             array_push($bindParams, $arrPath['foto2']);
         }
-        
+
         $sqlQuery .= " WHERE id_solicitud=? AND deleted_at IS NULL";
         array_push($bindParams, $idSolicitud);
-        // var_dump($sqlQuery);
-        // var_dump($bindParams);
-        // die();
 
         $database = new BaseDatos;
         $database->connect();
@@ -287,7 +285,8 @@ class SolicitudService
         return $database->ejecutarSqlSelect($sqlQuery, $bindParams);
     }
 
-    public function insertOperacion($unaSolicitud,$unVecino,$unaOperacion){
+    public function insertOperacion($unaSolicitud, $unVecino, $unaOperacion)
+    {
         $sqlQuery = "INSERT INTO RMAMH_Operacion (solicitud_id,wap_persona_op, operacion) VALUES(?,?,?)";
 
         $bindParams = [$unaSolicitud, $unVecino, $unaOperacion];
@@ -296,7 +295,7 @@ class SolicitudService
         $database->connect();
         return $database->ejecutarSqlInsert($sqlQuery, $bindParams);
     }
-    
+
 
     public function verificarPreturnoVecino($params)
     {
