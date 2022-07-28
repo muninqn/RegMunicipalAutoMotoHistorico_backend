@@ -98,6 +98,7 @@ class SolicitudController extends BaseController
                 # code...
                 $estadoSolicitud = $objService->updateEstadoSolcitud($params);
                 if ($estadoSolicitud != 0) {
+                    $objService->insertOperacion($params["solicitud"],$this->getIdWapPersona(),"Solicitud aprobada");
                     $response = crearRespuestaSolicitud(200, "OK", "Se Aprobó la solicitud correctamente", $estadoSolicitud);
                 } else {
                     $response = crearRespuestaSolicitud(400, "Error", "No se pudo actualiar la solicitud");
@@ -117,6 +118,7 @@ class SolicitudController extends BaseController
             $objService = new SolicitudService;
             $estadoSolicitud = $objService->updateEstadoSolcitud($params);
             if ($estadoSolicitud != 0) {
+                $objService->insertOperacion($params["solicitud"],$this->getIdWapPersona(),"Solicitud enviada para correccion");
                 $response = crearRespuestaSolicitud(200, "OK", "La solicitud se ha enviado para su revision correctamente.", $estadoSolicitud);
             } else {
                 $response = crearRespuestaSolicitud(400, "Error", "No se ha podido enviar la solicitud para su revision.");
@@ -130,10 +132,12 @@ class SolicitudController extends BaseController
 
     private function rechazarSolicitud($params)
     {
+        
         if ($this->getRequestMethod() == "POST") {
             $objService = new SolicitudService;
             $estadoSolicitud = $objService->updateEstadoSolcitud($params);
             if ($estadoSolicitud != 0) {
+                $objService->insertOperacion($params["solicitud"],$this->getIdWapPersona(),"Solicitud Rechazada");
                 $response = crearRespuestaSolicitud(200, "OK", "La solicitud ha rechazado correctamente.", $estadoSolicitud);
             } else {
                 $response = crearRespuestaSolicitud(400, "Error", "No se ha podido rechazar la solicitud.");

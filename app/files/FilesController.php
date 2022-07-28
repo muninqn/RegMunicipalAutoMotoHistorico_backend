@@ -39,8 +39,8 @@ class FilesController extends BaseController
             $objServiceSolicitud = new SolicitudService;
             if (array_key_exists("esEdicion", $params)) {
                 $solicitudHistorial = $objServiceSolicitud->selectSolicitudPorID($params);
-                // $insertSolicitudHistorico = $objServiceSolicitud->insertSolicitudHistorico($solicitudHistorial);
-                if (isset($insertSolicitudHistorico) || true) {
+                $insertSolicitudHistorico = $objServiceSolicitud->insertSolicitudHistorico($solicitudHistorial);
+                if (isset($insertSolicitudHistorico)) {
                     if (count($_FILES) > 0) {
                         $tamaño = $objService->validarSizeArchivos($_FILES);
                         $extension = $objService->validarExtensionArchivos($_FILES);
@@ -49,6 +49,7 @@ class FilesController extends BaseController
                                 $insertSolicitud = $objServiceSolicitud->updateRevisionSolicitud($params,$solicitudHistorial);
                                 if (isset($insertSolicitud)) {
                                     $idSolicitud = $params['id_solicitud'];
+                                    $insertSolicitud = $objServiceSolicitud->insertOperacion($idSolicitud,$params["wap_persona"],"Envio de Correccion de Solicitud");
                                     $arrPath = [];
                                     foreach ($_FILES as $key => $value) {
                                         $nombreArchivo = "solicitud_" . $idSolicitud . "-" . $key . obtenerExtensionArchivo($value['type']);
@@ -104,6 +105,7 @@ class FilesController extends BaseController
                             $insertSolicitud = $objServiceSolicitud->insertSolicitud($params);
                             if ($insertSolicitud != -1) {
                                 $idSolicitud = $insertSolicitud;
+                                $insertSolicitud = $objServiceSolicitud->insertOperacion($idSolicitud,$params["wap_persona"],"Envio de Solicitud");
                                 $arrPath = [];
                                 foreach ($_FILES as $key => $value) {
                                     $nombreArchivo = "solicitud_" . $idSolicitud . "-" . $key . obtenerExtensionArchivo($value['type']);

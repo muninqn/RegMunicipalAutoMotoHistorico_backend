@@ -287,6 +287,17 @@ class SolicitudService
         return $database->ejecutarSqlSelect($sqlQuery, $bindParams);
     }
 
+    public function insertOperacion($unaSolicitud,$unVecino,$unaOperacion){
+        $sqlQuery = "INSERT INTO RMAMH_Operacion (solicitud_id,wap_persona_op, operacion) VALUES(?,?,?)";
+
+        $bindParams = [$unaSolicitud, $unVecino, $unaOperacion];
+
+        $database = new BaseDatos;
+        $database->connect();
+        return $database->ejecutarSqlInsert($sqlQuery, $bindParams);
+    }
+    
+
     public function verificarPreturnoVecino($params)
     {
         $sqlQuery = "SELECT COUNT(*) as tienePreturno
