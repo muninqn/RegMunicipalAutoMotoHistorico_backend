@@ -25,7 +25,7 @@ $dotenv->load();
 define('PROD', $_ENV['PROD'] == 'true' ? true : false);
 
 /* ID de la aplicacion */
-define('APPID', PROD ? 83 : 83);
+define('APPID', PROD ? 86 : 86);
 
 /* Configuracion de URLs, si no está en produccion redirige el weblogin a replica */
 define('WEBLOGIN', PROD ? 'https://weblogin.muninqn.gov.ar' : 'http://200.85.183.194:90');
@@ -40,6 +40,7 @@ define('DB_CHARSET', PROD ? $_ENV['DB_CHARSET'] : 'utf8');
 
 /* Configuracion del path fIle */
 define('PATH_FILE_LOCAL', $_ENV['PATH_FILE_LOCAL'] == 'true' ? true : false);
+define('PATH_FILE_SERVER', $_ENV['PROD'] == 'true' ? "E:/Dataserver/Produccion/projects_files/" : "E:/Dataserver/Replica/projects_files/"); 
 
 /* Configuración de tablas (Ejemplos) */
 /*define('USUARIOS', $_ENV['DB_USUARIOS_TABLE']);

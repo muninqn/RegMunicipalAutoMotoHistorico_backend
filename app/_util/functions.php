@@ -90,10 +90,9 @@ function getDireccionArchivoAdjunto($nombreProyecto, $nombreArchivo, $idSolicitu
             ? "../../../projects_files/" . $nombreProyecto . "/" . $idSolicitud . "/"
             : "../../../projects_files/" . $nombreProyecto . "/nodeberiapasar/" . $idSolicitud . "/";
     } else {
-        PROD ? $serverFolder = "produccion" : $serverFolder = "replica";
         $target_path_local = $idSolicitud != null
-            ? "../../../../../../../../../DataServer/" . $serverFolder . "/projects_files/" . $nombreProyecto . "/" . $idSolicitud . "/"
-            : "../../../../../../../../../DataServer/" . $serverFolder . "/projects_files/" . $nombreProyecto . "/nodeberiapasar/" . $idSolicitud . "/";
+            ? PATH_FILE_SERVER . $nombreProyecto . "/" . $idSolicitud . "/"
+            : PATH_FILE_SERVER . $nombreProyecto . "/nodeberiapasar/" . $idSolicitud . "/";
     }
 
     if (!file_exists($target_path_local)) {
