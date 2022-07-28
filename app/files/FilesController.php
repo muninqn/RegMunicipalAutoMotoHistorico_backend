@@ -102,7 +102,10 @@ class FilesController extends BaseController
                 if (isset($tamaño)) {
                     if (isset($extension)) {
                         $objServiceVecino = new VecinoService;
-                        $insertVecino = $objServiceVecino->insertVecino($params);
+                        $insertVecino = $objServiceVecino->obtenerIdVecino($params);
+                        if(!isset($insertVecino)){
+                            $insertVecino = $objServiceVecino->insertVecino($params);
+                        }
                         if ($insertVecino != -1) {
                             $params['vecino_id'] = $insertVecino;
                             $objServiceSolicitud = new SolicitudService;

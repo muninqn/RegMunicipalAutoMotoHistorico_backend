@@ -43,6 +43,14 @@ class VecinoService
         $database->connect();
         return $database->ejecutarSqlInsert($sqlQuery, $bindParams);
     }
+    public function obtenerIdVecino($params){
+        $sqlQuery = "SELECT id_vecino FROM RMAMH_Vecino WHERE wap_persona=? OR documento=?";
+        $bindParams = [$params['wap_persona'], $params['documento']];
+
+        $database = new BaseDatos;
+        $database->connect();
+        return $database->ejecutarSqlSelect($sqlQuery, $bindParams);
+    }
 
     public function verificarPreturnoVecino($params)
     {
