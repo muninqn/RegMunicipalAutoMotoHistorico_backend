@@ -38,11 +38,11 @@ class FilesController extends BaseController
             $objService = new FilesService;
             $objServiceSolicitud = new SolicitudService;
             if (array_key_exists("esEdicion", $params)) {
-                $solicitudHistorial = $objServiceSolicitud->selectSolicitudPorID($params);
-                
+                $solicitudHistorial = $objServiceSolicitud->selectSolicitudParaHistorico($params);
+
                 $insertSolicitudHistorico = $objServiceSolicitud->insertSolicitudHistorico($solicitudHistorial);
                 // var_dump($sqlQuery);
-                
+
                 if (isset($insertSolicitudHistorico)) {
                     if (count($_FILES) > 0) {
                         $tamaño = $objService->validarSizeArchivos($_FILES);
@@ -50,10 +50,10 @@ class FilesController extends BaseController
                         if (isset($tamaño)) {
                             if (isset($extension)) {
                                 $insertSolicitud = $objServiceSolicitud->updateRevisionSolicitud($params, $solicitudHistorial);
-
                                 if (isset($insertSolicitud)) {
                                     $idSolicitud = $params['id_solicitud'];
                                     $insertSolicitud = $objServiceSolicitud->insertOperacion($idSolicitud, $params["wap_persona"], "Envio de Correccion de Solicitud");
+
                                     $arrPath = [];
                                     foreach ($_FILES as $key => $value) {
                                         $nombreArchivo = "solicitud_" . $idSolicitud . "-" . $key . obtenerExtensionArchivo($value['type']);
@@ -103,10 +103,10 @@ class FilesController extends BaseController
                     if (isset($extension)) {
                         $objServiceVecino = new VecinoService;
                         $insertVecino = $objServiceVecino->obtenerIdVecino($params);
-                        if(!isset($insertVecino)){
+                        if (!isset($insertVecino)) {
                             $insertVecino = $objServiceVecino->insertVecino($params);
-                        }else{
-                            $insertVecino=$insertVecino["id_vecino"];
+                        } else {
+                            $insertVecino = $insertVecino["id_vecino"];
                         }
                         if ($insertVecino != -1) {
                             $params['vecino_id'] = $insertVecino;
