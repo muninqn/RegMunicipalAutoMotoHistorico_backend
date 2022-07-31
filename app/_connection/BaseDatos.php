@@ -128,7 +128,7 @@ class BaseDatos
     {
         $response = -1;
         if ($statement = $this->getStatement($sqlQuery)) {
-            if ($pudoEjecutar = $this->executeQuery($statement, $bindParams)) {
+            if ($pudoEjecutar = $this->executeQuery($statement, deutf8ize($bindParams))) {
                 $response = $this->getLastIdInsert();
             }
         }
