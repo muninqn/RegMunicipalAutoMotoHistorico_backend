@@ -233,7 +233,18 @@ class SolicitudService
         $database->connect();
         return $database->ejecutarSqlSelectListar($sqlQuery, $bindParams);
     }
+    public function selectSolicitudParaHistorico($params)
+    {
+        $sqlQuery = "SELECT *
+        FROM RMAMH_Solicitud
+        WHERE id_solicitud=?";
+        //AND deleted_at is null
+        $bindParams = [$params['id_solicitud']];
 
+        $database = new BaseDatos;
+        $database->connect();
+        return $database->ejecutarSqlSelect($sqlQuery, $bindParams);
+    }
     public function selectSolicitudPorID($params)
     {
         $sqlQuery = "SELECT *
