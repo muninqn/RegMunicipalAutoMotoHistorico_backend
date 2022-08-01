@@ -32,9 +32,9 @@ if (!isset($bodyParamsArray['SESSIONKEY']) || $bodyParamsArray['SESSIONKEY'] == 
 } else {
     //verificamos que el usuario sea un usuario valido y obtenemos sus permisos
     $authController = new AuthController();
-    // if (($userData = $authController->getUserData($bodyParamsArray['SESSIONKEY'], (PROD ? 83 : 80))) != null) {
+    if (($userData = $authController->getUserData($bodyParamsArray['SESSIONKEY'], (PROD ? 85 : 85))) != null) {
 
-    if (($userData = $authController->getUserData($bodyParamsArray['SESSIONKEY'])) != null) {
+    // if (($userData = $authController->getUserData($bodyParamsArray['SESSIONKEY'])) != null) {
         //obtenemos los nombres del controller y el metodo desde la url
         $URL = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
         $URL = explode('/', $URL);

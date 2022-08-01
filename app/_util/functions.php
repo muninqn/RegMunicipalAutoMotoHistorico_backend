@@ -60,10 +60,6 @@ function crearRespuestaSolicitud($code, $status, $message, $data = null)
 function obtenerController($controllerName)
 {
     switch (strtolower($controllerName)) {
-
-        case 'credencial': //controlador de turnos
-            $controller = new CredencialController();
-            break;
         case 'solicitud': //controlador de turnos
             $controller = new SolicitudController();
             break;
