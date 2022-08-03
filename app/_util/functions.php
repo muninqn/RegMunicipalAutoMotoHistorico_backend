@@ -44,6 +44,10 @@ function formatearFechaAceptadaPorLaCuarentona($unaFechaConBarritas)
 {
     return date("Y-m-d", strtotime($unaFechaConBarritas));
 }
+function formatearFechaNacimiento($unaFechaConBarritas)
+{
+    return explode("T",$unaFechaConBarritas)[0];
+}
 
 function crearRespuestaSolicitud($code, $status, $message, $data = null)
 {

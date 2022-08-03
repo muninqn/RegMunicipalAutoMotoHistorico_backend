@@ -35,7 +35,7 @@ class VecinoService
 
     public function insertVecino($params)
     {
-        $fechaNacimiento = formatearFechaAceptadaPorLaCuarentona($params['fechaNacimiento']);
+        $fechaNacimiento = formatearFechaNacimiento($params['fechaNacimiento']);
         $params['urlFoto']=($params['urlFoto']==="null")?null:$params['urlFoto'];
         $sqlQuery = "INSERT INTO RMAMH_Vecino (wap_persona, nombre, apellido, tipo_documento, documento, fecha_nacimiento, email, telefono, url_foto, codigo_postal, provincia, ciudad, domicilio) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)";
         $bindParams = [$params['wap_persona'], $params['nombre'], $params['apellido'], $params['tipoDocumento'], $params['documento'], $fechaNacimiento, $params['email'], $params['telefono'], $params['urlFoto'], $params['codigoPostal'], $params['provincia'], $params['ciudad'], $params['domicilio']];
