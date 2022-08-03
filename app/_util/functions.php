@@ -42,7 +42,7 @@ function repararChars($unCampito)
 
 function formatearFechaAceptadaPorLaCuarentona($unaFechaConBarritas)
 {
-    return date("Y-m-d H:i:s", strtotime($unaFechaConBarritas));
+    return date("Y-m-d", strtotime($unaFechaConBarritas));
 }
 
 function crearRespuestaSolicitud($code, $status, $message, $data = null)
