@@ -91,19 +91,45 @@ class SolicitudController extends BaseController
 
     private function aprobarSolicitud($params)
     {
+
         if ($this->getRequestMethod() == "POST") {
             $objService = new SolicitudService;
+
             $exitePatente = $objService->buscarPatente($params);
             if (!isset($exitePatente)) {
                 # code...
-                $estadoSolicitud = $objService->updateEstadoSolcitud($params);
-                if ($estadoSolicitud != 0) {
-                    $objService->insertOperacion($params["solicitud"],$this->getIdWapPersona(),"Solicitud aprobada");
-                    $response = crearRespuestaSolicitud(200, "OK", "Se Aprobó la solicitud correctamente", $estadoSolicitud);
-                } else {
-                    $response = crearRespuestaSolicitud(400, "Error", "No se pudo actualiar la solicitud");
+                $insertSolicitudHistorico=0;
+                $params["id_solicitud"] = $params["solicitud"];
+                if (array_key_exists('edicionPatente', $params)) {
+                    $solicitudHistorial = $objService->selectSolicitudParaHistorico($params);
+                    $solicitudHistorial["accion"] = "EDICION_PATENTE";
+                    $insertSolicitudHistorico = $objService->insertSolicitudHistorico($solicitudHistorial);
+                    $params["estado"] = "EDICION_PATENTE";
                 }
-                $response['headers'] = ['HTTP/1.1 200 OK'];
+                $objBaseService = new BaseService();
+                $datosSolicitud = $objService->selectSolicitudPorID($params);
+
+                if ($objBaseService->gestionarEnvioMail($datosSolicitud, $params["estado"])) {
+                    if ($insertSolicitudHistorico !== -1) {
+                        $estadoSolicitud = $objService->updateEstadoSolcitud($params);
+                        if ($estadoSolicitud != 0) {
+                            if (array_key_exists('edicionPatente', $params)) {
+                                $objService->insertOperacion($params["solicitud"], $this->getIdWapPersona(), "Se modifico la Patente.");
+                                $response = crearRespuestaSolicitud(200, "OK", "Se Modifico la solicitud correctamente", $estadoSolicitud);
+                            } else {
+                                $objService->insertOperacion($params["solicitud"], $this->getIdWapPersona(), "Solicitud aprobada");
+                                $response = crearRespuestaSolicitud(200, "OK", "Se Aprobó la solicitud correctamente", $estadoSolicitud);
+                            }
+                        } else {
+                            $response = crearRespuestaSolicitud(400, "Error", "No se pudo actualiar la solicitud");
+                        }
+                        $response['headers'] = ['HTTP/1.1 200 OK'];
+                    } else {
+                        $response = crearRespuestaSolicitud(400, "Error", "Fallo el registro del historico de modificacion");
+                    }
+                } else {
+                    $response = crearRespuestaSolicitud(400, "Error", "No se pudo enviar email");
+                }
             } else {
                 $response = crearRespuestaSolicitud(400, "error", "Ya existe la patente asignada.");
             }
@@ -116,14 +142,28 @@ class SolicitudController extends BaseController
     {
         if ($this->getRequestMethod() == "POST") {
             $objService = new SolicitudService;
-            $estadoSolicitud = $objService->updateEstadoSolcitud($params);
-            if ($estadoSolicitud != 0) {
-                $objService->insertOperacion($params["solicitud"],$this->getIdWapPersona(),"Solicitud enviada para correccion");
-                $response = crearRespuestaSolicitud(200, "OK", "La solicitud se ha enviado para su revision correctamente.", $estadoSolicitud);
+            $objBaseService = new BaseService;
+            $params["id_solicitud"] = $params["solicitud"];
+            $solicitudHistorial = $objService->selectSolicitudParaHistorico($params);
+            $solicitudHistorial["accion"] = "ENVIO_OBSERVACION";
+            $insertSolicitudHistorico = $objService->insertSolicitudHistorico($solicitudHistorial);
+            $datosSolicitud = $objService->selectSolicitudPorID($params);
+            if ($objBaseService->gestionarEnvioMail($datosSolicitud, $params["estado"])) {
+                if ($insertSolicitudHistorico !== -1) {
+                    $estadoSolicitud = $objService->updateEstadoSolcitud($params);
+                    if ($estadoSolicitud != 0) {
+                        $objService->insertOperacion($params["solicitud"], $this->getIdWapPersona(), "Solicitud enviada para correccion");
+                        $response = crearRespuestaSolicitud(200, "OK", "La solicitud se ha enviado para su revision correctamente.", $estadoSolicitud);
+                    } else {
+                        $response = crearRespuestaSolicitud(400, "Error", "No se ha podido enviar la solicitud para su revision.");
+                    }
+                    $response['headers'] = ['HTTP/1.1 200 OK'];
+                } else {
+                    $response = crearRespuestaSolicitud(400, "Error", "Fallo el registro del historico de modificacion");
+                }
             } else {
-                $response = crearRespuestaSolicitud(400, "Error", "No se ha podido enviar la solicitud para su revision.");
+                $response = crearRespuestaSolicitud(400, "Error", "No se pudo enviar email");
             }
-            $response['headers'] = ['HTTP/1.1 200 OK'];
         } else {
             $response = crearRespuestaSolicitud(400, "error", "Metodo HTTP equivocado.");
         }
@@ -132,17 +172,49 @@ class SolicitudController extends BaseController
 
     private function rechazarSolicitud($params)
     {
-        
+
         if ($this->getRequestMethod() == "POST") {
             $objService = new SolicitudService;
+            $objBaseService = new BaseService;
+            $params["id_solicitud"] = $params["solicitud"];
             $estadoSolicitud = $objService->updateEstadoSolcitud($params);
-            if ($estadoSolicitud != 0) {
-                $objService->insertOperacion($params["solicitud"],$this->getIdWapPersona(),"Solicitud Rechazada");
-                $response = crearRespuestaSolicitud(200, "OK", "La solicitud ha rechazado correctamente.", $estadoSolicitud);
+            $datosSolicitud = $objService->selectSolicitudPorID($params);
+            if ($objBaseService->gestionarEnvioMail($datosSolicitud, $params["estado"])) {
+                if ($estadoSolicitud != 0) {
+                    $objService->insertOperacion($params["solicitud"], $this->getIdWapPersona(), "Solicitud Rechazada");
+                    $response = crearRespuestaSolicitud(200, "OK", "La solicitud ha rechazado correctamente.", $estadoSolicitud);
+                } else {
+                    $response = crearRespuestaSolicitud(400, "Error", "No se ha podido rechazar la solicitud.");
+                }
+                $response['headers'] = ['HTTP/1.1 200 OK'];
             } else {
-                $response = crearRespuestaSolicitud(400, "Error", "No se ha podido rechazar la solicitud.");
+                $response = crearRespuestaSolicitud(400, "Error", "No se pudo enviar email");
             }
-            $response['headers'] = ['HTTP/1.1 200 OK'];
+        } else {
+            $response = crearRespuestaSolicitud(400, "error", "Metodo HTTP equivocado.");
+        }
+        return $response;
+    }
+    private function cancelarSolicitud($params)
+    {
+
+        if ($this->getRequestMethod() == "POST") {
+            $objService = new SolicitudService;
+            $objBaseService = new BaseService;
+            $params["id_solicitud"] = $params["solicitud"];
+            $datosSolicitud = $objService->selectSolicitudPorID($params);
+            if ($objBaseService->gestionarEnvioMail($datosSolicitud, $params["estado"])) {
+                $estadoSolicitud = $objService->updateEstadoSolcitud($params);
+                if ($estadoSolicitud != 0) {
+                    $objService->insertOperacion($params["solicitud"], $this->getIdWapPersona(), "Solicitud Cancelada");
+                    $response = crearRespuestaSolicitud(200, "OK", "La solicitud ha cancelado correctamente.", $estadoSolicitud);
+                } else {
+                    $response = crearRespuestaSolicitud(400, "Error", "No se ha podido rechazar la solicitud.");
+                }
+                $response['headers'] = ['HTTP/1.1 200 OK'];
+            } else {
+                $response = crearRespuestaSolicitud(400, "Error", "No se pudo enviar email");
+            }
         } else {
             $response = crearRespuestaSolicitud(400, "error", "Metodo HTTP equivocado.");
         }

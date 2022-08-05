@@ -39,7 +39,7 @@ class FilesController extends BaseController
             $objServiceSolicitud = new SolicitudService;
             if (array_key_exists("esEdicion", $params)) {
                 $solicitudHistorial = $objServiceSolicitud->selectSolicitudParaHistorico($params);
-
+                $solicitudHistorial["accion"]="ENVIO_CORRECCION_VECINO";
                 $insertSolicitudHistorico = $objServiceSolicitud->insertSolicitudHistorico($solicitudHistorial);
                 // var_dump($sqlQuery);
 

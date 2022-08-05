@@ -89,9 +89,11 @@ class SolicitudService
     }
     public function insertSolicitudHistorico($params)
     {
-        $sqlQuery = "INSERT INTO RMAMH_SolicitudHistorico (solicitud_id,vecino_id, estado_id, marca, tipo, modelo, motor, chasis, fecha_fabricacion, caracteristicas_historia, otros, partes_no_originales) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)";
+        // var_dump($params);
+        // die();
+        $sqlQuery = "INSERT INTO RMAMH_SolicitudHistorico (solicitud_id,vecino_id, estado_id,patente, marca, tipo, modelo, motor, chasis, fecha_fabricacion,observacion, path_declaracion_jurada,path_titulo,path_boleto_compra,path_fotografia1,path_fotografia2,path_fotografia3,caracteristicas_historia, otros, partes_no_originales,accion) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
-        $bindParams = [$params['id_solicitud'], $params['vecino_id'], $params['estado_id'], $params['marca'], $params['tipo'], $params['modelo'], $params['motor'], $params['chasis'], $params['fecha_fabricacion'], $params['caracteristicas_historia'], $params['otros'], $params['partes_no_originales']];
+        $bindParams = [$params['id_solicitud'], $params['vecino_id'], $params['estado_id'], $params['patente'], $params['marca'], $params['tipo'], $params['modelo'], $params['motor'], $params['chasis'], $params['fecha_fabricacion'], $params["observacion"], $params["path_declaracion_jurada"], $params["path_titulo"], $params["path_boleto_compra"], $params["path_fotografia1"], $params["path_fotografia2"], $params["path_fotografia3"], $params['caracteristicas_historia'], $params['otros'], $params['partes_no_originales'], $params["accion"]];
 
         $database = new BaseDatos;
         $database->connect();
@@ -192,9 +194,10 @@ class SolicitudService
     }
     public function updateEstadoSolcitud($params)
     {
-        if ($params["estado"] === "APROBAR") {
+
+        if ($params["estado"] === "APROBAR" || $params["estado"] === "EDICION_PATENTE") {
             $estado = 2;
-            $sqlQuery = "UPDATE RMAMH_Solicitud SET estado_id=?, patente=? WHERE id_solicitud=? AND deleted_at IS NULL";
+            $sqlQuery = "UPDATE RMAMH_Solicitud SET estado_id=?, patente=?,modified_at=CURRENT_TIMESTAMP WHERE id_solicitud=? AND deleted_at IS NULL";
             $bindParams = [$estado, $params["patente"], $params["solicitud"]];
         }
         if ($params["estado"] === "RECHAZAR") {
@@ -205,16 +208,14 @@ class SolicitudService
         }
         if ($params["estado"] === "CORREGIR") {
             $estado = 5;
-            $sqlQuery = "UPDATE RMAMH_Solicitud SET estado_id=?, observacion=? WHERE id_solicitud=? AND deleted_at IS NULL";
+            $sqlQuery = "UPDATE RMAMH_Solicitud SET estado_id=?, observacion=?,modified_at=CURRENT_TIMESTAMP WHERE id_solicitud=? AND deleted_at IS NULL";
             $bindParams = [$estado, $params["observacion"], $params["solicitud"]];
         }
         if ($params["estado"] === "CANCELAR") {
-            $estado = 3;
+            $estado = 4;
             $sqlQuery = "UPDATE RMAMH_Solicitud SET estado_id=?,deleted_at=CURRENT_TIMESTAMP WHERE id_solicitud=? AND deleted_at IS NULL";
             $bindParams = [$estado, $params["solicitud"]];
         }
-
-
 
         $database = new BaseDatos;
         $database->connect();
