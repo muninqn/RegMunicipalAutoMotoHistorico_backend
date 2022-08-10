@@ -35,65 +35,79 @@ class FilesController extends BaseController
             // var_dump($_FILES);
             // var_dump($params);
             // die();
+
             $objService = new FilesService;
             $objServiceSolicitud = new SolicitudService;
+            $objServiceVecino = new VecinoService;
             if (array_key_exists("esEdicion", $params)) {
-                $solicitudHistorial = $objServiceSolicitud->selectSolicitudParaHistorico($params);
-                $solicitudHistorial["accion"]="ENVIO_CORRECCION_VECINO";
-                $insertSolicitudHistorico = $objServiceSolicitud->insertSolicitudHistorico($solicitudHistorial);
-                // var_dump($sqlQuery);
 
-                if (isset($insertSolicitudHistorico)) {
-                    if (count($_FILES) > 0) {
-                        $tamaño = $objService->validarSizeArchivos($_FILES);
-                        $extension = $objService->validarExtensionArchivos($_FILES);
-                        if (isset($tamaño)) {
-                            if (isset($extension)) {
-                                $insertSolicitud = $objServiceSolicitud->updateRevisionSolicitud($params, $solicitudHistorial);
-                                if (isset($insertSolicitud)) {
-                                    $idSolicitud = $params['id_solicitud'];
-                                    $insertSolicitud = $objServiceSolicitud->insertOperacion($idSolicitud, $params["wap_persona"], "Envio de Correccion de Solicitud");
+                $insertVecino = $objServiceVecino->obtenerIdVecino($params);
+                if (isset($insertVecino)) {
+                    $params["id_vecino"] = $insertVecino["id_vecino"];
+                    $updateVecino = $objServiceVecino->updateVecino($params);
+                    if ($updateVecino != 0) {
+                        $solicitudHistorial = $objServiceSolicitud->selectSolicitudParaHistorico($params);
+                        $solicitudHistorial["accion"] = "ENVIO_CORRECCION_VECINO";
+                        $insertSolicitudHistorico = $objServiceSolicitud->insertSolicitudHistorico($solicitudHistorial);
+                        // var_dump($sqlQuery);
 
-                                    $arrPath = [];
-                                    foreach ($_FILES as $key => $value) {
-                                        $nombreArchivo = "solicitud_" . $idSolicitud . "-" . $key . obtenerExtensionArchivo($value['type']);
-                                        //$nombreArchivo = "licencia_" . $this->getIdTramite() . "_" . $params['descripcionArchivo'];
-                                        $filePathSolicitud = getDireccionArchivoAdjunto("RMAMH", $nombreArchivo, $idSolicitud);
-                                        if (file_exists($filePathSolicitud . $nombreArchivo)) {
-                                            unlink($filePathSolicitud . $nombreArchivo);
+                        if (isset($insertSolicitudHistorico)) {
+                            if (count($_FILES) > 0) {
+                                $tamaño = $objService->validarSizeArchivos($_FILES);
+                                $extension = $objService->validarExtensionArchivos($_FILES);
+                                if (isset($tamaño)) {
+                                    if (isset($extension)) {
+                                        $insertSolicitud = $objServiceSolicitud->updateRevisionSolicitud($params, $solicitudHistorial);
+                                        if (isset($insertSolicitud)) {
+                                            $idSolicitud = $params['id_solicitud'];
+                                            $insertSolicitud = $objServiceSolicitud->insertOperacion($idSolicitud, $params["wap_persona"], "Envio de Correccion de Solicitud");
+
+                                            $arrPath = [];
+                                            foreach ($_FILES as $key => $value) {
+                                                $nombreArchivo = "solicitud_" . $idSolicitud . "-" . $key . obtenerExtensionArchivo($value['type']);
+                                                //$nombreArchivo = "licencia_" . $this->getIdTramite() . "_" . $params['descripcionArchivo'];
+                                                $filePathSolicitud = getDireccionArchivoAdjunto("RMAMH", $nombreArchivo, $idSolicitud);
+                                                if (file_exists($filePathSolicitud . $nombreArchivo)) {
+                                                    unlink($filePathSolicitud . $nombreArchivo);
+                                                }
+                                                $objService->subirArchivoServidor($value['tmp_name'], $value['type'], $value['size'], $filePathSolicitud);
+                                                $arrPath[$key] = $filePathSolicitud;
+                                                //Actualizar path de archivos en solicitud por cada archivo armar array de paths y update todo de una
+                                            }
+                                            $data = $objServiceSolicitud->updatePathSolcituModificacion($idSolicitud, $arrPath);
+                                            $response = crearRespuestaSolicitud(200, "OK", "Solicitud Subida", $data);
+                                        } else {
+                                            $response = crearRespuestaSolicitud(400, "error", "no se puedo registrar la solicitud");
                                         }
-                                        $objService->subirArchivoServidor($value['tmp_name'], $value['type'], $value['size'], $filePathSolicitud);
-                                        $arrPath[$key] = $filePathSolicitud;
-                                        //Actualizar path de archivos en solicitud por cada archivo armar array de paths y update todo de una
+                                    } else {
+                                        $response = crearRespuestaSolicitud(400, "error", $extension);
                                     }
-                                    $data = $objServiceSolicitud->updatePathSolcituModificacion($idSolicitud, $arrPath);
-                                    $response = crearRespuestaSolicitud(200, "OK", "Solicitud Subida", $data);
                                 } else {
-                                    $response = crearRespuestaSolicitud(400, "error", "no se puedo registrar la solicitud");
+                                    $response = crearRespuestaSolicitud(400, "error", $tamaño);
                                 }
                             } else {
-                                $response = crearRespuestaSolicitud(400, "error", $extension);
+                                // var_dump($solicitudHistorial);
+                                // var_dump($params);
+                                // die();
+                                // $params[""]
+                                $insertSolicitud = $objServiceSolicitud->updateRevisionSolicitud($params, $solicitudHistorial);
+                                if ($insertSolicitud != 0) {
+                                    $response = crearRespuestaSolicitud(200, "OK", "Solicitud Subida correctamente.");
+                                } else {
+                                    $response = crearRespuestaSolicitud(400, "Error", "No se ha podido enviar la solicitud.");
+                                }
+                                $response['headers'] = ['HTTP/1.1 200 OK'];
+                                #../../../projects_files/RMAMH/
+                                // $objServiceSolicitud->updatePathSolcitud($insertSolicitud, $arrPath);
                             }
                         } else {
-                            $response = crearRespuestaSolicitud(400, "error", $tamaño);
+                            $response = crearRespuestaSolicitud(400, "error", "No se puedo registrar historial de solicitud");
                         }
                     } else {
-                        // var_dump($solicitudHistorial);
-                        // var_dump($params);
-                        // die();
-                        // $params[""]
-                        $insertSolicitud = $objServiceSolicitud->updateRevisionSolicitud($params, $solicitudHistorial);
-                        if ($insertSolicitud != 0) {
-                            $response = crearRespuestaSolicitud(200, "OK", "Solicitud Subida correctamente.");
-                        } else {
-                            $response = crearRespuestaSolicitud(400, "Error", "No se ha podido enviar la solicitud.");
-                        }
-                        $response['headers'] = ['HTTP/1.1 200 OK'];
-                        #../../../projects_files/RMAMH/
-                        // $objServiceSolicitud->updatePathSolcitud($insertSolicitud, $arrPath);
+                        $response = crearRespuestaSolicitud(400, "error", "Fallo actualizacion de usuario");
                     }
                 } else {
-                    $response = crearRespuestaSolicitud(400, "error", "No se puedo registrar historial de solicitud");
+                    $response = crearRespuestaSolicitud(400, "error", "El usuario no existe");
                 }
             } else {
 
@@ -101,11 +115,13 @@ class FilesController extends BaseController
                 $extension = $objService->validarExtensionArchivos($_FILES);
                 if (isset($tamaño)) {
                     if (isset($extension)) {
-                        $objServiceVecino = new VecinoService;
+
                         $insertVecino = $objServiceVecino->obtenerIdVecino($params);
                         if (!isset($insertVecino)) {
                             $insertVecino = $objServiceVecino->insertVecino($params);
                         } else {
+                            $params["id_vecino"] = $insertVecino["id_vecino"];
+                            $updateVecino = $objServiceVecino->updateVecino($params);
                             $insertVecino = $insertVecino["id_vecino"];
                         }
                         if ($insertVecino != -1) {
@@ -147,5 +163,4 @@ class FilesController extends BaseController
         }
         return $response;
     }
-    
 }

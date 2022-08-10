@@ -1,6 +1,7 @@
 <?php
 require_once("../app/files/FilesController.php");
 require_once("../app/solicitud/SolicitudController.php");
+require_once("../app/vecino/VecinoController.php");
 
 
 // require_once("../app/delegacion/DelegacionController.php");
@@ -64,11 +65,14 @@ function crearRespuestaSolicitud($code, $status, $message, $data = null)
 function obtenerController($controllerName)
 {
     switch (strtolower($controllerName)) {
-        case 'solicitud': //controlador de turnos
+        case 'solicitud': //controlador de solicitud
             $controller = new SolicitudController();
             break;
-        case 'files': //controlador de turnos
+        case 'files': //controlador de files
             $controller = new FilesController();
+            break;
+        case 'vecino': //controlador de vecino
+            $controller = new VecinoController();
             break;
 
         default: //no se encontro controlador

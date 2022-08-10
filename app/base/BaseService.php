@@ -119,6 +119,14 @@ class BaseService
                 break;
         }
         if ($enviarEmail) {
+            if (isset($datosVecino['emailAlternativo'])) {
+                $emailParams = [
+                    "email" => $datosVecino['emailAlternativo'],
+                    "asunto" => "REGISTRO MUNICIPAL DE AUTOMOVILES Y MOTOCICLETAS HISTORICO",
+                    "emailBody" => $emailBody,
+                ];
+                $envio = $this->enviarMailTramiteCompletado($emailParams);
+            }
             $emailParams = [
                 "email" => $datosVecino['email'],
                 "asunto" => "REGISTRO MUNICIPAL DE AUTOMOVILES Y MOTOCICLETAS HISTORICO",
