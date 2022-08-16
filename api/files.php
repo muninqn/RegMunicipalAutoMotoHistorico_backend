@@ -50,8 +50,9 @@ if (!isset($bodyParamsArray['SESSIONKEY']) || $bodyParamsArray['SESSIONKEY'] == 
         $URL = explode('/', $URL);
 
         //se fija en la 5ta parte de la url de la api, debería ser el controller files
-        if (isset($URL[5]) && $URL[5] == "files") {
-            $controller = new FilesController();
+        if (($controller = obtenerController($URL[5])) != null) {
+        // if (isset($URL[5]) && $URL[5] == "files") {
+            // $controller = new FilesController();
 
             if (isset($URL[6])) {
                 //captura el tipo de peticion HTTP y el nombre del metodo buscado
