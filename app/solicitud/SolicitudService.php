@@ -35,7 +35,6 @@ class SolicitudService
 
     public function insertSolicitud($params)
     {
-        $sqlQuery = "INSERT INTO RMAMH_Solicitud (vecino_id, estado_id, marca, tipo, modelo, motor, chasis, fecha_fabricacion, caracteristicas_historia, otros, partes_no_originales) VALUES(?,?,?,?,?,?,?,?,?,?,?)";
         $estadoInicial = 1;
         $params['modelo'] = ($params['modelo'] === "null") ? null : $params['modelo'];
         $params['motor'] = ($params['motor'] === "null") ? null : $params['motor'];
@@ -43,8 +42,17 @@ class SolicitudService
         $params['fecha_fabricacion'] = ($params['fecha_fabricacion'] === "null") ? null : $params['fecha_fabricacion'];
         $params['otros'] = ($params['otros'] === "null") ? null : $params['otros'];
         $params['partes_no_originales'] = ($params['partes_no_originales'] === "null") ? null : $params['partes_no_originales'];
+        if ($params["esEmpresa"] === 'false') {
+            $sqlQuery = "INSERT INTO RMAMH_Solicitud (vecino_id, estado_id, marca, tipo, modelo, motor, chasis, fecha_fabricacion, caracteristicas_historia, otros, partes_no_originales,esEmpresa) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)";
+            $params["esEmpresa"] = 0;
+            $bindParams = [$params['vecino_id'], $estadoInicial, $params['marca'], $params['tipo'], $params['modelo'], $params['motor'], $params['chasis'], $params['fecha_fabricacion'], $params['caracteristicas_historia'], $params['otros'], $params['partes_no_originales'], $params["esEmpresa"]];
+        } else {
+            $params["esEmpresa"] = true;
+            $sqlQuery = "INSERT INTO RMAMH_Solicitud (vecino_id, estado_id, marca, tipo, modelo, motor, chasis, fecha_fabricacion, caracteristicas_historia, otros, partes_no_originales,esEmpresa,empresaCuit,empresaRazonSocial) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+            $bindParams = [$params['vecino_id'], $estadoInicial, $params['marca'], $params['tipo'], $params['modelo'], $params['motor'], $params['chasis'], $params['fecha_fabricacion'], $params['caracteristicas_historia'], $params['otros'], $params['partes_no_originales'], $params["esEmpresa"], $params['empresaCuit'], $params['empresaRazonSocial']];
+        }
 
-        $bindParams = [$params['vecino_id'], $estadoInicial, $params['marca'], $params['tipo'], $params['modelo'], $params['motor'], $params['chasis'], $params['fecha_fabricacion'], $params['caracteristicas_historia'], $params['otros'], $params['partes_no_originales']];
+
 
         $database = new BaseDatos;
         $database->connect();
@@ -61,6 +69,11 @@ class SolicitudService
         $params['fecha_fabricacion'] = ($params['fecha_fabricacion'] === "null") ? null : $params['fecha_fabricacion'];
         $params['otros'] = ($params['otros'] === "null") ? null : $params['otros'];
         $params['partes_no_originales'] = ($params['partes_no_originales'] === "null") ? null : $params['partes_no_originales'];
+        if ($params["esEmpresa"] === 'false') {
+            $params["esEmpresa"] = 0;
+        } else {
+            $params["esEmpresa"] = true;
+        }
         $estadoInicial = 1;
         $bindParams = [$estadoInicial];
         foreach ($historial as $key => $value) {
@@ -107,6 +120,14 @@ class SolicitudService
         $bindParams = [];
         // var_dump(count($bindParams) === 0);
         // die();
+        if (array_key_exists('pathEmpresaDocumento', $arrPath)) {
+            if (count($bindParams) === 0) {
+                $sqlQuery .= " pathEmpresaDocumento=?";
+            } else {
+                $sqlQuery .= " ,pathEmpresaDocumento=?";
+            }
+            array_push($bindParams, $arrPath['pathEmpresaDocumento']);
+        }
         if (array_key_exists('decjurada', $arrPath)) {
             if (count($bindParams) === 0) {
                 $sqlQuery .= " path_declaracion_jurada=?";
@@ -160,7 +181,6 @@ class SolicitudService
 
         $sqlQuery .= " WHERE id_solicitud=? AND deleted_at IS NULL";
         array_push($bindParams, $idSolicitud);
-
         $database = new BaseDatos;
         $database->connect();
         return $database->ejecutarSqlUpdateDelete($sqlQuery, $bindParams);
@@ -169,6 +189,10 @@ class SolicitudService
     {
         $sqlQuery = "UPDATE RMAMH_Solicitud SET path_declaracion_jurada=?,path_fotografia1=?";
         $bindParams = [$arrPath['decjurada'], $arrPath['foto0']];
+        if (array_key_exists('pathEmpresaDocumento', $arrPath)) {
+            $sqlQuery .= " ,pathEmpresaDocumento=?";
+            array_push($bindParams, $arrPath['pathEmpresaDocumento']);
+        }
         if (array_key_exists('fileTitulo', $arrPath)) {
             $sqlQuery .= " ,path_titulo=?";
             array_push($bindParams, $arrPath['fileTitulo']);
@@ -194,25 +218,37 @@ class SolicitudService
     }
     public function updateEstadoSolcitud($params)
     {
-
         if ($params["estado"] === "APROBAR" || $params["estado"] === "EDICION_PATENTE") {
             $estado = 2;
-            $sqlQuery = "UPDATE RMAMH_Solicitud SET estado_id=?, patente=?,modified_at=CURRENT_TIMESTAMP WHERE id_solicitud=? AND deleted_at IS NULL";
-            $bindParams = [$estado, $params["patente"], $params["solicitud"]];
+            if (isset($params["unaPath"])) {
+                $sqlQuery = "UPDATE RMAMH_Solicitud SET estado_id=?, patente=?,pathFotoVehiculoAdmin=?,modified_at=CURRENT_TIMESTAMP WHERE id_solicitud=? AND deleted_at IS NULL";
+                $bindParams = [$estado, $params["patente"], $params["unaPath"], $params["solicitud"]];
+            } else {
+                $sqlQuery = "UPDATE RMAMH_Solicitud SET estado_id=?, patente=?,modified_at=CURRENT_TIMESTAMP WHERE id_solicitud=? AND deleted_at IS NULL";
+                $bindParams = [$estado, $params["patente"], $params["solicitud"]];
+            }
         }
+        
         if ($params["estado"] === "RECHAZAR") {
             $estado = 3;
-
             $sqlQuery = "UPDATE RMAMH_Solicitud SET estado_id=?,deleted_at=CURRENT_TIMESTAMP WHERE id_solicitud=? AND deleted_at IS NULL";
             $bindParams = [$estado, $params["solicitud"]];
         }
+
         if ($params["estado"] === "CORREGIR") {
             $estado = 5;
             $sqlQuery = "UPDATE RMAMH_Solicitud SET estado_id=?, observacion=?,modified_at=CURRENT_TIMESTAMP WHERE id_solicitud=? AND deleted_at IS NULL";
             $bindParams = [$estado, $params["observacion"], $params["solicitud"]];
         }
+
         if ($params["estado"] === "CANCELAR") {
             $estado = 4;
+            $sqlQuery = "UPDATE RMAMH_Solicitud SET estado_id=?,deleted_at=CURRENT_TIMESTAMP WHERE id_solicitud=? AND deleted_at IS NULL";
+            $bindParams = [$estado, $params["solicitud"]];
+        }
+
+        if ($params["estado"] === "APROBAR_DOCUMENTACION") {
+            $estado = 6;
             $sqlQuery = "UPDATE RMAMH_Solicitud SET estado_id=?,deleted_at=CURRENT_TIMESTAMP WHERE id_solicitud=? AND deleted_at IS NULL";
             $bindParams = [$estado, $params["solicitud"]];
         }
