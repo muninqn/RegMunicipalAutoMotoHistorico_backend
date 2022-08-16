@@ -87,7 +87,8 @@ class BaseService
     }
 
     public function gestionarEnvioMail($datosVecino, $estado)
-    {
+    {   
+
         $enviarEmail = true;
         switch ($estado) {
             case 'APROBAR':
@@ -112,6 +113,21 @@ class BaseService
             case 'CANCELAR':
                 $emailBody = "<p>Estimado/a. <strong>" . $datosVecino["nombre"] . "</strong> su Solicitud para REGISTRO MUNICIPAL DE AUTOMOVILES Y MOTOCICLETAS HISTORICO fue <strong>CANCELADA</strong>.</p>
         <p>Debera realizar el tramite nuevamente.</p>
+        <p><strong>Este servicio gratuito es exclusivo para los/as vecinas/as de la ciudad de Neuquén.</strong></p>";
+                break;
+            case 'ENVIO':
+                $emailBody = "<p>Estimado/a. <strong>" . $datosVecino["nombre"] . "</strong> su Solicitud para REGISTRO MUNICIPAL DE AUTOMOVILES Y MOTOCICLETAS HISTORICO fue <strong>REGISTRADA</strong> correctamente.</p>
+        <p>El numero de solicitud es:".$datosVecino["numero_solicitud"]. ". Pronto se pondran en contacto con usted.</p>
+        <p><strong>Este servicio gratuito es exclusivo para los/as vecinas/as de la ciudad de Neuquén.</strong></p>";
+                break;
+            case 'ENVIO_CORRECCION':
+                $emailBody = "<p>Estimado/a. <strong>" . $datosVecino["nombre"] . "</strong> su Solicitud para REGISTRO MUNICIPAL DE AUTOMOVILES Y MOTOCICLETAS HISTORICO fue <strong>ENVIADA CON SUS CORRECIONES</strong> correctamente.</p>
+        <p>El numero de solicitud es:".$datosVecino["id_solicitud"]. ". Pronto se pondran en contacto con usted.</p>
+        <p><strong>Este servicio gratuito es exclusivo para los/as vecinas/as de la ciudad de Neuquén.</strong></p>";
+                break;
+            case 'APROBAR_DOCUMENTACION':
+                $emailBody = "<p>Estimado/a. <strong>" . $datosVecino["nombre"] . "</strong> a su Solicitud numero: ".$datosVecino["id_solicitud"]. " de REGISTRO MUNICIPAL DE AUTOMOVILES Y MOTOCICLETAS HISTORICO fue <strong>APROBADA LA DOCUMENTACION</strong>.</p>
+        <p>Pronto se pondran en contacto con usted para cordinar turno presencial.</p>
         <p><strong>Este servicio gratuito es exclusivo para los/as vecinas/as de la ciudad de Neuquén.</strong></p>";
                 break;
             default:
