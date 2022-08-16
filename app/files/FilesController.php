@@ -32,15 +32,12 @@ class FilesController extends BaseController
     private function subirSolicitud($params)
     {
         if ($this->getRequestMethod() == "POST") {
-            // var_dump($_FILES);
-            // var_dump($params);
-            // die();
 
             $objService = new FilesService;
             $objServiceSolicitud = new SolicitudService;
             $objServiceVecino = new VecinoService;
+            $objBaseService = new BaseService;
             if (array_key_exists("esEdicion", $params)) {
-
                 $insertVecino = $objServiceVecino->obtenerIdVecino($params);
                 if (isset($insertVecino)) {
                     $params["id_vecino"] = $insertVecino["id_vecino"];
@@ -49,8 +46,6 @@ class FilesController extends BaseController
                         $solicitudHistorial = $objServiceSolicitud->selectSolicitudParaHistorico($params);
                         $solicitudHistorial["accion"] = "ENVIO_CORRECCION_VECINO";
                         $insertSolicitudHistorico = $objServiceSolicitud->insertSolicitudHistorico($solicitudHistorial);
-                        // var_dump($sqlQuery);
-
                         if (isset($insertSolicitudHistorico)) {
                             if (count($_FILES) > 0) {
                                 $tamaño = $objService->validarSizeArchivos($_FILES);
@@ -61,7 +56,6 @@ class FilesController extends BaseController
                                         if (isset($insertSolicitud)) {
                                             $idSolicitud = $params['id_solicitud'];
                                             $insertSolicitud = $objServiceSolicitud->insertOperacion($idSolicitud, $params["wap_persona"], "Envio de Correccion de Solicitud");
-
                                             $arrPath = [];
                                             foreach ($_FILES as $key => $value) {
                                                 $nombreArchivo = "solicitud_" . $idSolicitud . "-" . $key . obtenerExtensionArchivo($value['type']);
@@ -75,6 +69,7 @@ class FilesController extends BaseController
                                                 //Actualizar path de archivos en solicitud por cada archivo armar array de paths y update todo de una
                                             }
                                             $data = $objServiceSolicitud->updatePathSolcituModificacion($idSolicitud, $arrPath);
+                                            $objBaseService->gestionarEnvioMail($params,"ENVIO_CORRECCION");
                                             $response = crearRespuestaSolicitud(200, "OK", "Solicitud Subida", $data);
                                         } else {
                                             $response = crearRespuestaSolicitud(400, "error", "no se puedo registrar la solicitud");
@@ -85,13 +80,12 @@ class FilesController extends BaseController
                                 } else {
                                     $response = crearRespuestaSolicitud(400, "error", $tamaño);
                                 }
-                            } else {
-                                // var_dump($solicitudHistorial);
-                                // var_dump($params);
-                                // die();
-                                // $params[""]
+                            } else {   
+                                                            
                                 $insertSolicitud = $objServiceSolicitud->updateRevisionSolicitud($params, $solicitudHistorial);
+                                
                                 if ($insertSolicitud != 0) {
+                                    $objBaseService->gestionarEnvioMail($params,"ENVIO_CORRECCION");
                                     $response = crearRespuestaSolicitud(200, "OK", "Solicitud Subida correctamente.");
                                 } else {
                                     $response = crearRespuestaSolicitud(400, "Error", "No se ha podido enviar la solicitud.");
@@ -130,7 +124,8 @@ class FilesController extends BaseController
                             $insertSolicitud = $objServiceSolicitud->insertSolicitud($params);
                             if ($insertSolicitud != -1) {
                                 $idSolicitud = $insertSolicitud;
-                                $insertSolicitud = $objServiceSolicitud->insertOperacion($idSolicitud, $params["wap_persona"], "Envio de Solicitud");
+                                $params["numero_solicitud"]=$idSolicitud;
+                                $objServiceSolicitud->insertOperacion($idSolicitud, $params["wap_persona"], "Envio de Solicitud");
                                 $arrPath = [];
                                 foreach ($_FILES as $key => $value) {
                                     $nombreArchivo = "solicitud_" . $idSolicitud . "-" . $key . obtenerExtensionArchivo($value['type']);
@@ -141,6 +136,7 @@ class FilesController extends BaseController
                                     //Actualizar path de archivos en solicitud por cada archivo armar array de paths y update todo de una
                                 }
                                 $data = $objServiceSolicitud->updatePathSolcitud($idSolicitud, $arrPath);
+                                $objBaseService->gestionarEnvioMail($params,"ENVIO");
                                 $response = crearRespuestaSolicitud(200, "OK", "Solicitud Subida", $data);
                             } else {
                                 $response = crearRespuestaSolicitud(400, "error", "no se puedo registrar la solicitud");
