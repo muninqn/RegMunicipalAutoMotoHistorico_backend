@@ -47,7 +47,7 @@ function formatearFechaAceptadaPorLaCuarentona($unaFechaConBarritas)
 }
 function formatearFechaNacimiento($unaFechaConBarritas)
 {
-    return explode("T",$unaFechaConBarritas)[0];
+    return explode("T", $unaFechaConBarritas)[0];
 }
 
 function crearRespuestaSolicitud($code, $status, $message, $data = null)
@@ -128,6 +128,23 @@ function obtenerExtensionArchivo($fileType)
         $extension = null;
     }
     return $extension;
+}
+/* Funcion que recibe el base64 del archivo y retorna */
+function obtenerArchivo($fileType)
+{
+    $fileExtension = pathinfo($fileType, PATHINFO_EXTENSION);
+
+    // Definimos el tipo de archivo
+    if ($fileExtension == "pdf") {
+        $fileMimeType = "application/" . $fileExtension;
+    } else {
+        $fileMimeType = "image/" . $fileExtension;
+    }
+
+    // Obtenemos el archivo y lo convertimos a base64
+    $fileData = file_get_contents($fileType);
+    $base64File = "data:$fileMimeType;base64," . base64_encode($fileData);
+    return $base64File;
 }
 
 /* El formato de la fecha se pone año dia mes para que lo acepte la consulta en la db, despues lo muestra bien */
