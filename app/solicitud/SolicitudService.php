@@ -187,18 +187,28 @@ class SolicitudService
         return $database->ejecutarSqlUpdateDelete($sqlQuery, $bindParams);
     }
     public function updateEstadoSolcitud($params)
-    {   
+    {
         if ($params["estado"] === "APROBAR" || $params["estado"] === "EDICION_PATENTE") {
             $estado = 2;
-            if (isset($params["unaPath"])) {
-                $sqlQuery = "UPDATE RMAMH_Solicitud SET estado_id=?, patente=?,pathFotoVehiculoAdmin=?,modified_at=CURRENT_TIMESTAMP WHERE id_solicitud=? AND deleted_at IS NULL";
-                $bindParams = [$estado, $params["patente"], $params["unaPath"], $params["solicitud"]];
+            if (isset($params["fotoVehiculoAdmin"]) && isset($params["fotoVehiculoAdmin2"])) {
+                $sqlQuery = "UPDATE RMAMH_Solicitud SET estado_id=?, patente=?,pathFotoVehiculoAdmin=?,pathFotoVehiculoAdmin2=?,modified_at=CURRENT_TIMESTAMP WHERE id_solicitud=? AND deleted_at IS NULL";
+                $bindParams = [$estado, $params["patente"], $params["fotoVehiculoAdmin"], $params["fotoVehiculoAdmin2"], $params["solicitud"]];
             } else {
-                $sqlQuery = "UPDATE RMAMH_Solicitud SET estado_id=?, patente=?,modified_at=CURRENT_TIMESTAMP WHERE id_solicitud=? AND deleted_at IS NULL";
-                $bindParams = [$estado, $params["patente"], $params["solicitud"]];
+                if (isset($params["fotoVehiculoAdmin"])) {
+                    $sqlQuery = "UPDATE RMAMH_Solicitud SET estado_id=?, patente=?,pathFotoVehiculoAdmin=?,modified_at=CURRENT_TIMESTAMP WHERE id_solicitud=? AND deleted_at IS NULL";
+                    $bindParams = [$estado, $params["patente"], $params["fotoVehiculoAdmin"], $params["solicitud"]];
+                } else {
+                    if (isset($params["fotoVehiculoAdmin2"])) {
+                        $sqlQuery = "UPDATE RMAMH_Solicitud SET estado_id=?, patente=?,pathFotoVehiculoAdmin2=?,modified_at=CURRENT_TIMESTAMP WHERE id_solicitud=? AND deleted_at IS NULL";
+                        $bindParams = [$estado, $params["patente"], $params["fotoVehiculoAdmin2"], $params["solicitud"]];
+                    } else {
+                        $sqlQuery = "UPDATE RMAMH_Solicitud SET estado_id=?, patente=?,modified_at=CURRENT_TIMESTAMP WHERE id_solicitud=? AND deleted_at IS NULL";
+                        $bindParams = [$estado, $params["patente"], $params["solicitud"]];
+                    }
+                }
             }
         }
-        
+
         if ($params["estado"] === "RECHAZAR") {
             $estado = 3;
             $sqlQuery = "UPDATE RMAMH_Solicitud SET estado_id=?,deleted_at=CURRENT_TIMESTAMP WHERE id_solicitud=? AND deleted_at IS NULL";
@@ -312,5 +322,4 @@ class SolicitudService
         $database->connect();
         return $database->ejecutarSqlInsert($sqlQuery, $bindParams);
     }
-
 }

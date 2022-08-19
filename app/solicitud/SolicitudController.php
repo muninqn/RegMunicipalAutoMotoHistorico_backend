@@ -52,7 +52,7 @@ class SolicitudController extends BaseController
 
                     foreach ($arrSolicitudes as $key => $value) {
 
-                        if ($key === "path_declaracion_jurada" || $key === "path_titulo" || $key === "path_boleto_compra" || $key === "path_fotografia1" || $key === "path_fotografia2" || $key === "path_fotografia3" || $key === "pathEmpresaDocumento" || $key === 'pathFotoVehiculoAdmin') {
+                        if ($key === "path_declaracion_jurada" || $key === "path_titulo" || $key === "path_boleto_compra" || $key === "path_fotografia1" || $key === "path_fotografia2" || $key === "path_fotografia3" || $key === "pathEmpresaDocumento" || $key === 'pathFotoVehiculoAdmin'|| $key === 'pathFotoVehiculoAdmin2') {
                             if ($value !== null) {
 
                                 $base64File = obtenerArchivo($value);
@@ -110,7 +110,11 @@ class SolicitudController extends BaseController
                     $objService = new SolicitudService;
 
                     if (isset($params["patente"])) {
-                        $exitePatente = $objService->buscarPatente($params);
+                        if (array_key_exists('edicionPatente', $params)) {
+                            $exitePatente=null;
+                        }else{
+                            $exitePatente = $objService->buscarPatente($params);
+                        }
                         if (!isset($exitePatente)) {
                             $insertSolicitudHistorico = 0;
                             $params["id_solicitud"] = $params["solicitud"];
@@ -123,15 +127,13 @@ class SolicitudController extends BaseController
                             $objBaseService = new BaseService();
                             $datosSolicitud = $objService->selectSolicitudPorID($params);
 
-                            $params["unaPath"] = null;
                             if (isset($_FILES)) {
                                 foreach ($_FILES as $key => $value) {
                                     $nombreArchivo = "solicitud_" . $params["id_solicitud"] . "-" . $key . obtenerExtensionArchivo($value['type']);
 
                                     $filePathSolicitud = getDireccionArchivoAdjunto("RMAMH", $nombreArchivo, $params["id_solicitud"]);
                                     $objFileService->subirArchivoServidor($value['tmp_name'], $value['type'], $value['size'], $filePathSolicitud);
-                                    $params["unaPath"] = $filePathSolicitud;
-
+                                    $params[$key] = $filePathSolicitud;
                                     //Actualizar path de archivos en solicitud por cada archivo armar array de paths y update todo de una
                                 }
                             }
