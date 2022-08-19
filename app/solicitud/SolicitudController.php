@@ -85,9 +85,9 @@ class SolicitudController extends BaseController
                 $estadoSolicitud = $objService->updateEstadoSolcitud($params);
                 if ($estadoSolicitud != 0) {
                     $objService->insertOperacion($params["solicitud"], $this->getIdWapPersona(), "Solicitud Cancelada");
-                    $response = crearRespuestaSolicitud(200, "OK", "La solicitud ha cancelado correctamente.", $estadoSolicitud);
+                    $response = crearRespuestaSolicitud(200, "OK", "Se Aprobó la Documentacion Correctamente.", $estadoSolicitud);
                 } else {
-                    $response = crearRespuestaSolicitud(400, "Error", "No se ha podido rechazar la solicitud.");
+                    $response = crearRespuestaSolicitud(400, "Error", "No se ha podido aprobar la Documentacion de la solicitud.");
                 }
                 $response['headers'] = ['HTTP/1.1 200 OK'];
             } else {
@@ -135,10 +135,10 @@ class SolicitudController extends BaseController
                                     //Actualizar path de archivos en solicitud por cada archivo armar array de paths y update todo de una
                                 }
                             }
-                            if ($objBaseService->gestionarEnvioMail($datosSolicitud, $params["estado"])) {
-                                if ($insertSolicitudHistorico !== -1) {
-                                    $estadoSolicitud = $objService->updateEstadoSolcitud($params);
-                                    if ($estadoSolicitud != 0) {
+                            if ($insertSolicitudHistorico !== -1) {
+                                $estadoSolicitud = $objService->updateEstadoSolcitud($params);
+                                if ($estadoSolicitud != 0) {
+                                    if ($objBaseService->gestionarEnvioMail($datosSolicitud, $params["estado"])) {
                                         if (array_key_exists('edicionPatente', $params)) {
                                             $objService->insertOperacion($params["solicitud"], $this->getIdWapPersona(), "Se modifico la Patente.");
                                             $response = crearRespuestaSolicitud(200, "OK", "Se Modifico la solicitud correctamente", $estadoSolicitud);
@@ -147,14 +147,14 @@ class SolicitudController extends BaseController
                                             $response = crearRespuestaSolicitud(200, "OK", "Se Aprobó la solicitud correctamente", $estadoSolicitud);
                                         }
                                     } else {
-                                        $response = crearRespuestaSolicitud(400, "Error", "No se pudo actualiar la solicitud");
+                                        $response = crearRespuestaSolicitud(400, "Error", "No se pudo enviar email");
                                     }
-                                    $response['headers'] = ['HTTP/1.1 200 OK'];
                                 } else {
-                                    $response = crearRespuestaSolicitud(400, "Error", "Fallo el registro del historico de modificacion");
+                                    $response = crearRespuestaSolicitud(400, "Error", "No se pudo actualiar la solicitud");
                                 }
+                                $response['headers'] = ['HTTP/1.1 200 OK'];
                             } else {
-                                $response = crearRespuestaSolicitud(400, "Error", "No se pudo enviar email");
+                                $response = crearRespuestaSolicitud(400, "Error", "Fallo el registro del historico de modificacion");
                             }
                         } else {
                             $response = crearRespuestaSolicitud(400, "error", "Ya existe la patente asignada.");
@@ -323,29 +323,4 @@ class SolicitudController extends BaseController
         }
         return $response;
     }
-
-    // private function verificarPreTurnoExistente($params)
-    // {
-    //     if ($this->getRequestMethod() == "POST") {
-    //         $objService = new PreTurnoService;
-    //         $objUserService = new VecinoService;
-    //         $idUserData = $objUserService->obtenerIdVecino($params['referecia'], $params['documento']);
-    //         if (!isset($idUserData["id_vecino"])) {
-    //             $response = crearRespuestaSolicitud(200, "OK", "Puede sacar pre-turno.");
-    //         } else {
-    //             $tienePreturnos = $objService->verificarPreturnoVecino($idUserData['id_vecino']);
-    //             if (!isset($tienePreturnos['tienePreturno']) || $tienePreturnos['tienePreturno'] == 0) {
-    //                 $response = crearRespuestaSolicitud(200, "OK", "Puede sacar pre-turno.");
-    //             } else {
-    //                 $resultSet = $objService->buscarPreturnoVecino($idUserData['id_vecino']);
-    //                 $response = crearRespuestaSolicitud(400, "error", "Ya dispone de un pre-turno activo", $resultSet);
-    //             }
-    //         }
-    //         $response['headers'] = ['HTTP/1.1 200 OK'];
-    //     } else {
-    //         $response = crearRespuestaSolicitud(400, "error", "Metodo HTTP equivocado.");
-    //     }
-    //     return $response;
-    // }
-
 }

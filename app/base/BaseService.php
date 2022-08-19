@@ -88,7 +88,6 @@ class BaseService
 
     public function gestionarEnvioMail($datosVecino, $estado)
     {   
-
         $enviarEmail = true;
         switch ($estado) {
             case 'APROBAR':
