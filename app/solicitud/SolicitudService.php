@@ -279,7 +279,7 @@ class SolicitudService
     }
     public function verificarSolicitudesUsuario($params)
     {
-        $sqlQuery = "SELECT id_solicitud,nombre,apellido,estado_id
+        $sqlQuery = "SELECT id_solicitud,nombre,apellido,estado_id,marca,modelo
         FROM RMAMH_Vecino
         INNER JOIN RMAMH_Solicitud ON RMAMH_Solicitud.vecino_id = RMAMH_Vecino.id_vecino
         WHERE documento=?";
