@@ -304,8 +304,8 @@ class SolicitudService
     {
         $sqlQuery = "SELECT patente
         FROM RMAMH_Solicitud
-        WHERE patente=? AND deleted_at is null";
-        $bindParams = [$params['patente']];
+        WHERE patente=? AND id_solicitud <> ? AND deleted_at is null";
+        $bindParams = [$params['patente'],$params["solicitud"]];
 
         $database = new BaseDatos;
         $database->connect();

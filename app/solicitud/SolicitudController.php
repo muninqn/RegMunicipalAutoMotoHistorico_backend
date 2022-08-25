@@ -176,6 +176,22 @@ class SolicitudController extends BaseController
         return $response;
     }
 
+    private function verificarPatente($params){
+        if ($this->getRequestMethod() == "POST") {
+            $objService = new SolicitudService;
+            $exitePatente = $objService->buscarPatente($params);
+            if (!isset($exitePatente)) {
+                $response = crearRespuestaSolicitud(200, "OK", "Patente Aceptada");
+                $response['headers'] = ['HTTP/1.1 200 OK'];
+
+            }else{
+                $response = crearRespuestaSolicitud(400, "error", "Ya existe la patente asignada.");
+            }
+        }else{
+            $response = crearRespuestaSolicitud(400, "error", "Metodo HTTP equivocado.");
+        }
+        return $response;
+    }
     private function revisarSolicitud($params)
     {
         if ($this->getRequestMethod() == "POST") {
