@@ -102,6 +102,7 @@ class BaseService
                 break;
             case 'RECHAZAR':
                 $emailBody = "<p>Estimado/a. <strong>" . $datosVecino["nombre"] . "</strong> su Solicitud para REGISTRO MUNICIPAL DE AUTOMOVILES Y MOTOCICLETAS HISTORICO fue <strong>RECHAZADA</strong>.</p>
+                <p><strong>Motivo:".$datosVecino["observacion"]."</strong></p>
                 <p><strong>Este servicio gratuito es exclusivo para los/as vecinas/as de la ciudad de Neuquén.</strong></p>";
                 break;
             case 'CORREGIR':

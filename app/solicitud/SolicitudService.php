@@ -211,8 +211,8 @@ class SolicitudService
 
         if ($params["estado"] === "RECHAZAR") {
             $estado = 3;
-            $sqlQuery = "UPDATE RMAMH_Solicitud SET estado_id=?,deleted_at=CURRENT_TIMESTAMP WHERE id_solicitud=? AND deleted_at IS NULL";
-            $bindParams = [$estado, $params["solicitud"]];
+            $sqlQuery = "UPDATE RMAMH_Solicitud SET estado_id=?,observacion=?,deleted_at=CURRENT_TIMESTAMP WHERE id_solicitud=? AND deleted_at IS NULL";
+            $bindParams = [$estado,$params["observacion"], $params["solicitud"]];
         }
 
         if ($params["estado"] === "CORREGIR") {
