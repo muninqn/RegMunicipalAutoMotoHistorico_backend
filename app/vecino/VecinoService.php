@@ -35,8 +35,8 @@ class VecinoService
         return $database->ejecutarSqlSelect($sqlQuery, $bindParams);
     }
     public function obtenerDatosVecino($params){
-        $sqlQuery = "SELECT telefonoAlternativo,emailAlternativo FROM RMAMH_Vecino WHERE wap_persona=? OR documento=?";
-        $bindParams = [$params['wap_persona'], $params['documento']];
+        $sqlQuery = "SELECT telefonoAlternativo,emailAlternativo FROM RMAMH_Vecino WHERE wap_persona=?";
+        $bindParams = [$params['wap_persona']];
 
         $database = new BaseDatos;
         $database->connect();
