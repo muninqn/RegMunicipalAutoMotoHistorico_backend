@@ -117,7 +117,7 @@ class BaseService
                 break;
             case 'ENVIO':
                 $emailBody = "<p>Estimado/a. <strong>" . $datosVecino["nombre"] . "</strong> su Solicitud para REGISTRO MUNICIPAL DE AUTOMOVILES Y MOTOCICLETAS HISTORICO fue <strong>REGISTRADA</strong> correctamente.</p>
-        <p>El numero de solicitud es:".$datosVecino["numero_solicitud"]. ". Pronto se pondran en contacto con usted.</p>
+        <p>El numero de solicitud es:".$datosVecino["id_solicitud"]. ". Pronto se pondran en contacto con usted.</p>
         <p><strong>Este servicio gratuito es exclusivo para los/as vecinas/as de la ciudad de Neuquén.</strong></p>";
                 break;
             case 'ENVIO_CORRECCION':

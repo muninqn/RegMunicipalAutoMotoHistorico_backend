@@ -5,6 +5,7 @@ require_once("../app/base/BaseController.php");
 require_once("../app/files/FilesService.php");
 require_once("../app/vecino/VecinoService.php");
 require_once("../app/solicitud/SolicitudService.php");
+require_once("../app/empresa/EmpresaService.php");
 
 
 class FilesController extends BaseController
@@ -36,67 +37,83 @@ class FilesController extends BaseController
             $objService = new FilesService;
             $objServiceSolicitud = new SolicitudService;
             $objServiceVecino = new VecinoService;
+            $empresaService= new EmpresaService;
             $objBaseService = new BaseService;
+            $datosVecino = $objServiceVecino->obtenerIdVecino($params);
+            if (!isset($datosVecino)) {
+                // $insertVecino = $objServiceVecino->insertVecino($params);
+                $params["nombre"] = $datosVecino["Nombre"];
+                $params["email"] = $datosVecino["CorreoElectronico"];
+            } else {
+                $params["id_vecino"] = $datosVecino["id_vecino"];
+                $params["nombre"] = $datosVecino["Nombre"];
+                $params["email"] = $datosVecino["CorreoElectronico"];
+                $insertVecino = $datosVecino["id_vecino"];
+            }
             if (array_key_exists("esEdicion", $params)) {
-                $insertVecino = $objServiceVecino->obtenerIdVecino($params);
-                if (isset($insertVecino)) {
-                    $params["id_vecino"] = $insertVecino["id_vecino"];
+                // $datosVecino = $objServiceVecino->obtenerIdVecino($params);
+                if (isset($datosVecino)) {
                     $updateVecino = $objServiceVecino->updateVecino($params);
                     if ($updateVecino != 0) {
                         $solicitudHistorial = $objServiceSolicitud->selectSolicitudParaHistorico($params);
-                        $solicitudHistorial["accion"] = "ENVIO_CORRECCION_VECINO";
-                        $insertSolicitudHistorico = $objServiceSolicitud->insertSolicitudHistorico($solicitudHistorial);
-                        if (isset($insertSolicitudHistorico)) {
+                        // if (isset($insertSolicitudHistorico)) {
+                            $archivos=false;
+                            $sinArchivos=false;
                             if (count($_FILES) > 0) {
                                 $tamaño = $objService->validarSizeArchivos($_FILES);
                                 $extension = $objService->validarExtensionArchivos($_FILES);
                                 if (isset($tamaño)) {
                                     if (isset($extension)) {
-                                        $insertSolicitud = $objServiceSolicitud->updateRevisionSolicitud($params, $solicitudHistorial);
-                                        if (isset($insertSolicitud)) {
-                                            $idSolicitud = $params['id_solicitud'];
-                                            $insertSolicitud = $objServiceSolicitud->insertOperacion($idSolicitud, $params["wap_persona"], "Envio de Correccion de Solicitud");
-                                            $arrPath = [];
-                                            foreach ($_FILES as $key => $value) {
-                                                $nombreArchivo = "solicitud_" . $idSolicitud . "-" . $key . obtenerExtensionArchivo($value['type']);
-                                                //$nombreArchivo = "licencia_" . $this->getIdTramite() . "_" . $params['descripcionArchivo'];
-                                                $filePathSolicitud = getDireccionArchivoAdjunto("RMAMH", $nombreArchivo, $idSolicitud);
-                                                if (file_exists($filePathSolicitud . $nombreArchivo)) {
-                                                    unlink($filePathSolicitud . $nombreArchivo);
-                                                }
-                                                $objService->subirArchivoServidor($value['tmp_name'], $value['type'], $value['size'], $filePathSolicitud);
-                                                $arrPath[$key] = $filePathSolicitud;
-                                                //Actualizar path de archivos en solicitud por cada archivo armar array de paths y update todo de una
-                                            }
-                                            $data = $objServiceSolicitud->updatePathSolcituModificacion($idSolicitud, $arrPath);
-                                            $objBaseService->gestionarEnvioMail($params,"ENVIO_CORRECCION");
-                                            $response = crearRespuestaSolicitud(200, "OK", "Solicitud Subida", $data);
-                                        } else {
-                                            $response = crearRespuestaSolicitud(400, "error", "no se puedo registrar la solicitud");
+                                    $idSolicitud = $params['id_solicitud'];
+                                    $arrPath = [];
+                                    foreach ($_FILES as $key => $value) {
+                                        $nombreArchivo = "solicitud_" . $idSolicitud . "-" . $key . obtenerExtensionArchivo($value['type']);
+                                        //$nombreArchivo = "licencia_" . $this->getIdTramite() . "_" . $params['descripcionArchivo'];
+                                        $filePathSolicitud = getDireccionArchivoAdjunto("RMAMH", $nombreArchivo, $idSolicitud);
+                                        if (file_exists($filePathSolicitud . $nombreArchivo)) {
+                                            unlink($filePathSolicitud . $nombreArchivo);
                                         }
+                                        $archivos = $objService->subirArchivoServidor($value['tmp_name'], $value['type'], $value['size'], $filePathSolicitud);
+                                        $arrPath[$key] = $filePathSolicitud;
+                                        $params[$key] = $filePathSolicitud;
+                                        //Actualizar path de archivos en solicitud por cada archivo armar array de paths y update todo de una
+                                    }
                                     } else {
-                                        $response = crearRespuestaSolicitud(400, "error", $extension);
+                                        $response = crearRespuestaSolicitud(400, "error extencion no valida de algun archivo", $extension);
                                     }
                                 } else {
-                                    $response = crearRespuestaSolicitud(400, "error", $tamaño);
+                                    $response = crearRespuestaSolicitud(400, "error algun archivo supera el tamaño permitido", $tamaño);
                                 }
-                            } else {   
-                                                            
+                            }else{
+                                $sinArchivos=true;
+                            }
+
+                            if ($sinArchivos || $archivos) {
                                 $insertSolicitud = $objServiceSolicitud->updateRevisionSolicitud($params, $solicitudHistorial);
-                                
                                 if ($insertSolicitud != 0) {
+                                    $objServiceSolicitud->insertSolicitudHistorico($solicitudHistorial,$params);
+                                    $insertSolicitud = $objServiceSolicitud->insertOperacion($params['id_solicitud'], $params["wap_persona"],1);
+                                    if ($params["esEmpresa"] !== 'false') {
+                                        $buscarEmpresa= $empresaService->verificarExisteCuitEmpresa($params["empresaCuit"]);
+                                        if (isset($buscarEmpresa)) {
+                                            $params["empresa_id"]=$buscarEmpresa["id_empresa"];
+                                            //update solicitud con id empresa
+                                            $empresaService->updateEmpresa($params);
+                                            $objServiceSolicitud->updateEmpresaSolicitud($params);
+                                        }else{
+                                            $params["empresa_id"]=$empresaService->insertEmpresaNueva($params);
+                                            $objServiceSolicitud->updateEmpresaSolicitud($params);
+                                        }
+                                    }
                                     $objBaseService->gestionarEnvioMail($params,"ENVIO_CORRECCION");
                                     $response = crearRespuestaSolicitud(200, "OK", "Solicitud Subida correctamente.");
                                 } else {
                                     $response = crearRespuestaSolicitud(400, "Error", "No se ha podido enviar la solicitud.");
                                 }
                                 $response['headers'] = ['HTTP/1.1 200 OK'];
-                                #../../../projects_files/RMAMH/
-                                // $objServiceSolicitud->updatePathSolcitud($insertSolicitud, $arrPath);
+                            }else{
+                                $response=crearRespuestaSolicitud(400,"Error","No se ha pudo subir archivos");
                             }
-                        } else {
-                            $response = crearRespuestaSolicitud(400, "error", "No se puedo registrar historial de solicitud");
-                        }
                     } else {
                         $response = crearRespuestaSolicitud(400, "error", "Fallo actualizacion de usuario");
                     }
@@ -104,28 +121,36 @@ class FilesController extends BaseController
                     $response = crearRespuestaSolicitud(400, "error", "El usuario no existe");
                 }
             } else {
-
                 $tamaño = $objService->validarSizeArchivos($_FILES);
                 $extension = $objService->validarExtensionArchivos($_FILES);
                 if (isset($tamaño)) {
                     if (isset($extension)) {
-
-                        $insertVecino = $objServiceVecino->obtenerIdVecino($params);
-                        if (!isset($insertVecino)) {
+                        if (!isset($datosVecino)) {
                             $insertVecino = $objServiceVecino->insertVecino($params);
                         } else {
-                            $params["id_vecino"] = $insertVecino["id_vecino"];
                             $updateVecino = $objServiceVecino->updateVecino($params);
-                            $insertVecino = $insertVecino["id_vecino"];
                         }
                         if ($insertVecino != -1) {
                             $params['vecino_id'] = $insertVecino;
-                            $objServiceSolicitud = new SolicitudService;
+                            
                             $insertSolicitud = $objServiceSolicitud->insertSolicitud($params);
                             if ($insertSolicitud != -1) {
                                 $idSolicitud = $insertSolicitud;
-                                $params["numero_solicitud"]=$idSolicitud;
-                                $objServiceSolicitud->insertOperacion($idSolicitud, $params["wap_persona"], "Envio de Solicitud");
+                                $params["id_solicitud"]=$idSolicitud;
+                                $objServiceSolicitud->insertOperacion($idSolicitud, $params["wap_persona"], 1);
+                    
+                                if ($params["esEmpresa"] !== 'false') {
+                                    $buscarEmpresa= $empresaService->verificarExisteCuitEmpresa($params["empresaCuit"]);
+                                    if (isset($buscarEmpresa)) {
+                                        $params["empresa_id"]=$buscarEmpresa["id_empresa"];
+                                        //update solicitud con id empresa
+                                        $objServiceSolicitud->updateEmpresaSolicitud($params);
+                                    }else{
+                                        $params["empresa_id"]=$empresaService->insertEmpresaNueva($params);
+                                        $objServiceSolicitud->updateEmpresaSolicitud($params);
+                                    }
+                                }
+
                                 $arrPath = [];
                                 foreach ($_FILES as $key => $value) {
                                     $nombreArchivo = "solicitud_" . $idSolicitud . "-" . $key . obtenerExtensionArchivo($value['type']);
@@ -136,7 +161,11 @@ class FilesController extends BaseController
                                     //Actualizar path de archivos en solicitud por cada archivo armar array de paths y update todo de una
                                 }
                                 $data = $objServiceSolicitud->updatePathSolcitud($idSolicitud, $arrPath);
+                                // if ($params["esEmpresa"] !== 'false') {
+                                //     $empresaService->updatePathEmpresa($params["empresa_id"], $arrPath["pathEmpresaDocumento"]);
+                                // }
                                 $objBaseService->gestionarEnvioMail($params,"ENVIO");
+
                                 $response = crearRespuestaSolicitud(200, "OK", "Solicitud Subida", $data);
                             } else {
                                 $response = crearRespuestaSolicitud(400, "error", "no se puedo registrar la solicitud");

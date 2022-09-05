@@ -2,6 +2,7 @@
 require_once("../app/files/FilesController.php");
 require_once("../app/solicitud/SolicitudController.php");
 require_once("../app/vecino/VecinoController.php");
+require_once("../app/empresa/EmpresaController.php");
 
 
 // require_once("../app/delegacion/DelegacionController.php");
@@ -73,6 +74,9 @@ function obtenerController($controllerName)
             break;
         case 'vecino': //controlador de vecino
             $controller = new VecinoController();
+            break;
+        case 'empresa': //controlador de vecino
+            $controller = new EmpresaController();
             break;
 
         default: //no se encontro controlador
