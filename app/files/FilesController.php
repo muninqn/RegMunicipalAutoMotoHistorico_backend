@@ -105,8 +105,8 @@ class FilesController extends BaseController
                                             $objServiceSolicitud->updateEmpresaSolicitud($params);
                                         }
                                     }
-                                    $objBaseService->gestionarEnvioMail($params,"ENVIO_CORRECCION");
                                     $response = crearRespuestaSolicitud(200, "OK", "Solicitud Subida correctamente.");
+                                    $objBaseService->gestionarEnvioMail($params,"ENVIO_CORRECCION");
                                 } else {
                                     $response = crearRespuestaSolicitud(400, "Error", "No se ha podido enviar la solicitud.");
                                 }
@@ -164,9 +164,9 @@ class FilesController extends BaseController
                                 // if ($params["esEmpresa"] !== 'false') {
                                 //     $empresaService->updatePathEmpresa($params["empresa_id"], $arrPath["pathEmpresaDocumento"]);
                                 // }
+                                $response = crearRespuestaSolicitud(200, "OK", "Solicitud Subida", $data);
                                 $objBaseService->gestionarEnvioMail($params,"ENVIO");
 
-                                $response = crearRespuestaSolicitud(200, "OK", "Solicitud Subida", $data);
                             } else {
                                 $response = crearRespuestaSolicitud(400, "error", "no se puedo registrar la solicitud");
                             }

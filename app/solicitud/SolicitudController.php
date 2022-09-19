@@ -83,18 +83,19 @@ class SolicitudController extends BaseController
             $datosSolicitud = $objService->selectSolicitudPorID($params);
             $datosSolicitud["nombre"]=$datosSolicitud["Nombre"];
             $datosSolicitud["email"]=$datosSolicitud["CorreoElectronico"];
-            if ($objBaseService->gestionarEnvioMail($datosSolicitud, $params["estado"])) {
+            // if ($objBaseService->gestionarEnvioMail($datosSolicitud, $params["estado"])) {
                 $estadoSolicitud = $objService->updateEstadoSolcitud($params);
                 if ($estadoSolicitud != 0) {
                     $objService->insertOperacion($params["solicitud"], $this->getIdWapPersona(),6);
                     $response = crearRespuestaSolicitud(200, "OK", "Se Aprobó la Documentacion Correctamente.", $estadoSolicitud);
+                    $objBaseService->gestionarEnvioMail($datosSolicitud, $params["estado"]);
                 } else {
                     $response = crearRespuestaSolicitud(400, "Error", "No se ha podido aprobar la Documentacion de la solicitud.");
                 }
                 $response['headers'] = ['HTTP/1.1 200 OK'];
-            } else {
-                $response = crearRespuestaSolicitud(400, "Error", "No se pudo enviar email");
-            }
+            // } else {
+            //     $response = crearRespuestaSolicitud(400, "Error", "No se pudo enviar email");
+            // }
         } else {
             $response = crearRespuestaSolicitud(400, "error", "Metodo HTTP equivocado.");
         }
@@ -144,7 +145,7 @@ class SolicitudController extends BaseController
                             if ($insertSolicitudHistorico !== -1) {
                                 $estadoSolicitud = $objService->updateEstadoSolcitud($params);
                                 if ($estadoSolicitud != 0) {
-                                    if ($objBaseService->gestionarEnvioMail($datosSolicitud, $params["estado"])) {
+                                    // if ($objBaseService->gestionarEnvioMail($datosSolicitud, $params["estado"])) {
                                         if (array_key_exists('edicionPatente', $params)) {
                                             $objService->insertOperacion($params["solicitud"], $this->getIdWapPersona(),2);
                                             $response = crearRespuestaSolicitud(200, "OK", "Se Modifico la solicitud correctamente", $estadoSolicitud);
@@ -152,9 +153,10 @@ class SolicitudController extends BaseController
                                             $objService->insertOperacion($params["solicitud"], $this->getIdWapPersona(),2);
                                             $response = crearRespuestaSolicitud(200, "OK", "Se Aprobó la solicitud correctamente", $estadoSolicitud);
                                         }
-                                    } else {
-                                        $response = crearRespuestaSolicitud(400, "Error", "No se pudo enviar email");
-                                    }
+                                        $objBaseService->gestionarEnvioMail($datosSolicitud, $params["estado"]);
+                                    // } else {
+                                    //     $response = crearRespuestaSolicitud(400, "Error", "No se pudo enviar email");
+                                    // }
                                 } else {
                                     $response = crearRespuestaSolicitud(400, "Error", "No se pudo actualiar la solicitud");
                                 }
@@ -205,20 +207,21 @@ class SolicitudController extends BaseController
             $datosSolicitud = $objService->selectSolicitudPorID($params);
             $datosSolicitud["nombre"]=$datosSolicitud["Nombre"];
             $datosSolicitud["email"]=$datosSolicitud["CorreoElectronico"];
-            if ($objBaseService->gestionarEnvioMail($datosSolicitud, $params["estado"])) {
+            // if ($objBaseService->gestionarEnvioMail($datosSolicitud, $params["estado"])) {
 
                 $estadoSolicitud = $objService->updateEstadoSolcitud($params);
                 if ($estadoSolicitud != 0) {
                     $objService->insertOperacion($params["solicitud"], $this->getIdWapPersona(),5);
                     $response = crearRespuestaSolicitud(200, "OK", "La solicitud se ha enviado para su revision correctamente.", $estadoSolicitud);
+                    $objBaseService->gestionarEnvioMail($datosSolicitud, $params["estado"]);
                 } else {
                     $response = crearRespuestaSolicitud(400, "Error", "No se ha podido enviar la solicitud para su revision.");
                 }
                 $response['headers'] = ['HTTP/1.1 200 OK'];
                
-            } else {
-                $response = crearRespuestaSolicitud(400, "Error", "No se pudo enviar email");
-            }
+            // } else {
+            //     $response = crearRespuestaSolicitud(400, "Error", "No se pudo enviar email");
+            // }
         } else {
             $response = crearRespuestaSolicitud(400, "error", "Metodo HTTP equivocado.");
         }
@@ -236,17 +239,18 @@ class SolicitudController extends BaseController
             $datosSolicitud = $objService->selectSolicitudPorID($params);
             $datosSolicitud["nombre"]=$datosSolicitud["Nombre"];
             $datosSolicitud["email"]=$datosSolicitud["CorreoElectronico"];
-            if ($objBaseService->gestionarEnvioMail($datosSolicitud, $params["estado"])) {
+            // if ($objBaseService->gestionarEnvioMail($datosSolicitud, $params["estado"])) {
                 if ($estadoSolicitud != 0) {
                     $objService->insertOperacion($params["solicitud"], $this->getIdWapPersona(),3);
                     $response = crearRespuestaSolicitud(200, "OK", "La solicitud ha rechazado correctamente.", $estadoSolicitud);
+                    $objBaseService->gestionarEnvioMail($datosSolicitud, $params["estado"]);
                 } else {
                     $response = crearRespuestaSolicitud(400, "Error", "No se ha podido rechazar la solicitud.");
                 }
                 $response['headers'] = ['HTTP/1.1 200 OK'];
-            } else {
-                $response = crearRespuestaSolicitud(400, "Error", "No se pudo enviar email");
-            }
+            // } else {
+            //     $response = crearRespuestaSolicitud(400, "Error", "No se pudo enviar email");
+            // }
         } else {
             $response = crearRespuestaSolicitud(400, "error", "Metodo HTTP equivocado.");
         }
@@ -262,18 +266,19 @@ class SolicitudController extends BaseController
             $datosSolicitud = $objService->selectSolicitudPorID($params);
             $datosSolicitud["nombre"]=$datosSolicitud["Nombre"];
             $datosSolicitud["email"]=$datosSolicitud["CorreoElectronico"];
-            if ($objBaseService->gestionarEnvioMail($datosSolicitud, $params["estado"])) {
+            // if ($objBaseService->gestionarEnvioMail($datosSolicitud, $params["estado"])) {
                 $estadoSolicitud = $objService->updateEstadoSolcitud($params);
                 if ($estadoSolicitud != 0) {
                     $objService->insertOperacion($params["solicitud"], $this->getIdWapPersona(),4);
                     $response = crearRespuestaSolicitud(200, "OK", "La solicitud ha cancelado correctamente.", $estadoSolicitud);
+                    $objBaseService->gestionarEnvioMail($datosSolicitud, $params["estado"]);
                 } else {
                     $response = crearRespuestaSolicitud(400, "Error", "No se ha podido rechazar la solicitud.");
                 }
                 $response['headers'] = ['HTTP/1.1 200 OK'];
-            } else {
-                $response = crearRespuestaSolicitud(400, "Error", "No se pudo enviar email");
-            }
+            // } else {
+            //     $response = crearRespuestaSolicitud(400, "Error", "No se pudo enviar email");
+            // }
         } else {
             $response = crearRespuestaSolicitud(400, "error", "Metodo HTTP equivocado.");
         }
