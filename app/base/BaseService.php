@@ -118,7 +118,8 @@ class BaseService
             case 'ENVIO':
                 $emailBody = "<p>Estimado/a. <strong>" . $datosVecino["nombre"] . "</strong> Su formulario y documentación para REGISTRO MUNICIPAL DE VEHICULOS ANTIGUOS ha sido ingresados.</p>
                 <p>El numero de solicitud es:".$datosVecino["id_solicitud"]. ".</p>
-                <p>Se recuerda que tal formulario reviste el carácter de declaración jurada haciéndose responsable el firmante de la veracidad de los datos consignados. Desde ya muchas gracias.Subsecretaría de Medio Ambiente y Protección Ciudadana. Municipalidad de Neuquén</p>
+                <p>Se recuerda que tal formulario reviste el carácter de declaración jurada haciéndose responsable el firmante de la veracidad de los datos consignados.</p>
+                <p>Desde ya muchas gracias. Subsecretaría de Medio Ambiente y Protección Ciudadana. Municipalidad de Neuquén</p>
                 <p><strong>Este servicio gratuito es exclusivo para los/as vecinas/as de la ciudad de Neuquén.</strong></p>";
                 break;
             case 'ENVIO_CORRECCION':
