@@ -91,42 +91,43 @@ class BaseService
         $enviarEmail = true;
         switch ($estado) {
             case 'APROBAR':
-                $emailBody = "<p>Estimado/a. <strong>" . $datosVecino["nombre"] . "</strong> su Solicitud para REGISTRO MUNICIPAL DE AUTOMOVILES Y MOTOCICLETAS HISTORICO fue <strong>APROBADA</strong>.</p>
+                $emailBody = "<p>Estimado/a. <strong>" . $datosVecino["nombre"] . "</strong> su Solicitud para REGISTRO MUNICIPAL DE VEHICULOS ANTIGUOS fue <strong>APROBADA</strong>.</p>
         <p>Por favor revise la aplicacion para poder ver su credencial.</p>
         <p><strong>Este servicio gratuito es exclusivo para los/as vecinas/as de la ciudad de Neuquén.</strong></p>";
                 break;
             case 'EDICION_PATENTE':
-                $emailBody = "<p>Estimado/a. <strong>" . $datosVecino["nombre"] . "</strong> su Solicitud para REGISTRO MUNICIPAL DE AUTOMOVILES Y MOTOCICLETAS HISTORICO fue <strong>APROBADA</strong>.</p>
+                $emailBody = "<p>Estimado/a. <strong>" . $datosVecino["nombre"] . "</strong> su Solicitud para REGISTRO MUNICIPAL DE VEHICULOS ANTIGUOS fue <strong>APROBADA</strong>.</p>
         <p>Su PATENTE fue modificadada.Por favor revise la aplicacion para poder ver su credencial.</p>
         <p><strong>Este servicio gratuito es exclusivo para los/as vecinas/as de la ciudad de Neuquén.</strong></p>";
                 break;
             case 'RECHAZAR':
-                $emailBody = "<p>Estimado/a. <strong>" . $datosVecino["nombre"] . "</strong> su Solicitud para REGISTRO MUNICIPAL DE AUTOMOVILES Y MOTOCICLETAS HISTORICO fue <strong>RECHAZADA</strong>.</p>
+                $emailBody = "<p>Estimado/a. <strong>" . $datosVecino["nombre"] . "</strong> su Solicitud para REGISTRO MUNICIPAL DE VEHICULOS ANTIGUOS fue <strong>RECHAZADA</strong>.</p>
                 <p><strong>Motivo:".$datosVecino["observacion"]."</strong></p>
                 <p><strong>Este servicio gratuito es exclusivo para los/as vecinas/as de la ciudad de Neuquén.</strong></p>";
                 break;
             case 'CORREGIR':
-                $emailBody = "<p>Estimado/a. <strong>" . $datosVecino["nombre"] . "</strong> su Solicitud para REGISTRO MUNICIPAL DE AUTOMOVILES Y MOTOCICLETAS HISTORICO tiene <strong>OBSERVACIONES</strong> realizadas por personal de Administracion.</p>
+                $emailBody = "<p>Estimado/a. <strong>" . $datosVecino["nombre"] . "</strong> su Solicitud para REGISTRO MUNICIPAL DE VEHICULOS ANTIGUOS tiene <strong>OBSERVACIONES</strong> realizadas por personal de Administracion.</p>
         <p>Por favor revise la aplicacion para corregir su solicitud.</p>
         <p><strong>Este servicio gratuito es exclusivo para los/as vecinas/as de la ciudad de Neuquén.</strong></p>";
                 break;
             case 'CANCELAR':
-                $emailBody = "<p>Estimado/a. <strong>" . $datosVecino["nombre"] . "</strong> su Solicitud para REGISTRO MUNICIPAL DE AUTOMOVILES Y MOTOCICLETAS HISTORICO fue <strong>CANCELADA</strong>.</p>
+                $emailBody = "<p>Estimado/a. <strong>" . $datosVecino["nombre"] . "</strong> su Solicitud para REGISTRO MUNICIPAL DE VEHICULOS ANTIGUOS fue <strong>CANCELADA</strong>.</p>
         <p>Debera realizar el tramite nuevamente.</p>
         <p><strong>Este servicio gratuito es exclusivo para los/as vecinas/as de la ciudad de Neuquén.</strong></p>";
                 break;
             case 'ENVIO':
-                $emailBody = "<p>Estimado/a. <strong>" . $datosVecino["nombre"] . "</strong> su Solicitud para REGISTRO MUNICIPAL DE AUTOMOVILES Y MOTOCICLETAS HISTORICO fue <strong>REGISTRADA</strong> correctamente.</p>
-        <p>El numero de solicitud es:".$datosVecino["id_solicitud"]. ". Pronto se pondran en contacto con usted.</p>
-        <p><strong>Este servicio gratuito es exclusivo para los/as vecinas/as de la ciudad de Neuquén.</strong></p>";
+                $emailBody = "<p>Estimado/a. <strong>" . $datosVecino["nombre"] . "</strong> Su formulario y documentación para REGISTRO MUNICIPAL DE VEHICULOS ANTIGUOS ha sido ingresados.</p>
+                <p>El numero de solicitud es:".$datosVecino["id_solicitud"]. ".</p>
+                <p>Se recuerda que tal formulario reviste el carácter de declaración jurada haciéndose responsable el firmante de la veracidad de los datos consignados. Desde ya muchas gracias.Subsecretaría de Medio Ambiente y Protección Ciudadana. Municipalidad de Neuquén</p>
+                <p><strong>Este servicio gratuito es exclusivo para los/as vecinas/as de la ciudad de Neuquén.</strong></p>";
                 break;
             case 'ENVIO_CORRECCION':
-                $emailBody = "<p>Estimado/a. <strong>" . $datosVecino["nombre"] . "</strong> su Solicitud para REGISTRO MUNICIPAL DE AUTOMOVILES Y MOTOCICLETAS HISTORICO fue <strong>ENVIADA CON SUS CORRECIONES</strong> correctamente.</p>
+                $emailBody = "<p>Estimado/a. <strong>" . $datosVecino["nombre"] . "</strong> su Solicitud para REGISTRO MUNICIPAL DE VEHICULOS ANTIGUOS fue <strong>ENVIADA CON SUS CORRECIONES</strong> correctamente.</p>
         <p>El numero de solicitud es:".$datosVecino["id_solicitud"]. ". Pronto se pondran en contacto con usted.</p>
         <p><strong>Este servicio gratuito es exclusivo para los/as vecinas/as de la ciudad de Neuquén.</strong></p>";
                 break;
             case 'APROBAR_DOCUMENTACION':
-                $emailBody = "<p>Estimado/a. <strong>" . $datosVecino["nombre"] . "</strong> a su Solicitud numero: ".$datosVecino["id_solicitud"]. " de REGISTRO MUNICIPAL DE AUTOMOVILES Y MOTOCICLETAS HISTORICO fue <strong>APROBADA LA DOCUMENTACION</strong>.</p>
+                $emailBody = "<p>Estimado/a. <strong>" . $datosVecino["nombre"] . "</strong> a su Solicitud numero: ".$datosVecino["id_solicitud"]. " de REGISTRO MUNICIPAL DE VEHICULOS ANTIGUOS fue <strong>APROBADA LA DOCUMENTACION</strong>.</p>
         <p>Pronto se pondran en contacto con usted para cordinar turno presencial.</p>
         <p><strong>Este servicio gratuito es exclusivo para los/as vecinas/as de la ciudad de Neuquén.</strong></p>";
                 break;
@@ -138,14 +139,14 @@ class BaseService
             if (isset($datosVecino['emailAlternativo'])) {
                 $emailParams = [
                     "email" => $datosVecino['emailAlternativo'],
-                    "asunto" => "REGISTRO MUNICIPAL DE AUTOMOVILES Y MOTOCICLETAS HISTORICO",
+                    "asunto" => "REGISTRO MUNICIPAL DE VEHICULOS ANTIGUOS",
                     "emailBody" => $emailBody,
                 ];
                 $envio = $this->enviarMailTramiteCompletado($emailParams);
             }
             $emailParams = [
                 "email" => $datosVecino['email'],
-                "asunto" => "REGISTRO MUNICIPAL DE AUTOMOVILES Y MOTOCICLETAS HISTORICO",
+                "asunto" => "REGISTRO MUNICIPAL DE VEHICULOS ANTIGUOS",
                 "emailBody" => $emailBody,
             ];
             $envio = $this->enviarMailTramiteCompletado($emailParams);
