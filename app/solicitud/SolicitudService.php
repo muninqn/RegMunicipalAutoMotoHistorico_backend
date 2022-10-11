@@ -247,7 +247,7 @@ class SolicitudService
     public function selectSolicitudes()
     {
         $sqlQuery =
-        "SELECT id_solicitud,Nombre,Documento,estado_id
+        "SELECT id_solicitud,Nombre,Documento,estado_id,RMAMH_Solicitud.created_at
         FROM RMAMH_Vecino
         INNER JOIN RMAMH_Solicitud ON RMAMH_Solicitud.vecino_id = RMAMH_Vecino.id_vecino INNER JOIN wapPersonas ON RMAMH_Vecino.wap_persona = wapPersonas.ReferenciaID ORDER BY RMAMH_Solicitud.created_at DESC";
         //WHERE deleted_at is null
@@ -300,7 +300,7 @@ class SolicitudService
     }
     public function verificarSolicitudesUsuario($params)
     {
-        $sqlQuery = "SELECT id_solicitud,Nombre,estado_id,marca,modelo
+        $sqlQuery = "SELECT id_solicitud,Nombre,estado_id,marca,modelo,RMAMH_Solicitud.created_at
         FROM RMAMH_Vecino
         INNER JOIN RMAMH_Solicitud ON RMAMH_Solicitud.vecino_id = RMAMH_Vecino.id_vecino
         INNER JOIN wapPersonas ON RMAMH_Vecino.wap_persona = wapPersonas.ReferenciaID
