@@ -30,7 +30,10 @@ class SolicitudController extends BaseController
         if ($this->getRequestMethod() == "POST") {
             $objService = new SolicitudService;
             $arrSolicitudes = $objService->selectSolicitudes();
-            if (!isset($arrSolicitude)) {
+            if (isset($arrSolicitudes)) {
+                foreach ($arrSolicitudes as $key => $value) {
+                    $arrSolicitudes[$key]["created_at"]=date("d-m-Y",strtotime($value["created_at"]));
+                }
                 $response = crearRespuestaSolicitud(200, "OK", "Se recuperaron las solicitudes", $arrSolicitudes);
             } else {
                 $response = crearRespuestaSolicitud(200, "OK", "No hay solicitudes", $arrSolicitudes);
@@ -338,6 +341,9 @@ class SolicitudController extends BaseController
                 $objService = new SolicitudService;
                 $solicitudes = $objService->verificarSolicitudesUsuario($params);
                 if (isset($solicitudes)) {
+                    foreach ($solicitudes as $key => $value) {
+                        $solicitudes[$key]["created_at"]=date("d-m-Y",strtotime($value["created_at"]));
+                    }
                     $response = crearRespuestaSolicitud(200, "OK", "Existe solicitud vigente", $solicitudes);
                 } else {
                     $response = crearRespuestaSolicitud(400, "Error", "No existe solicitud vigente");
