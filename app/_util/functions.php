@@ -243,3 +243,31 @@ function sumarEjeDatosY($original)
     $valor = $original + 4;
     return $valor;
 }
+
+function verificarImagenRennaper($documento,$genero){
+    if ($genero === "M") {
+        $carpeta="MASCULINO";
+    }else{
+        if ($genero === "F") {
+            $carpeta="FEMENINO";
+        }else{
+            if (PATH_FILE_LOCAL) {
+                $carpeta="NO%20BINARIO";
+            }else{
+                $carpeta="NO BINARIO";
+            }
+        }   
+    }
+    
+    if (PATH_FILE_LOCAL) {
+        $direccionAConsultar="https://weblogin.muninqn.gov.ar/DataServerOK/webRenaper/";
+    }else {
+        if (PROD) {
+            $direccionAConsultar="E:/Dataserver/Produccion/webRenaper/";
+        }else{
+            $direccionAConsultar="E:/Dataserver/Replica/webRenaper/";
+        }
+    }
+    $arrContextOptions = array("ssl" => array("verify_peer" => false, "verify_peer_name" => false,),);
+    return @file_get_contents($direccionAConsultar.$carpeta."/".$genero.$documento.".png", false, stream_context_create($arrContextOptions));
+}

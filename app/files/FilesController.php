@@ -32,6 +32,9 @@ class FilesController extends BaseController
 
     private function subirSolicitud($params)
     {
+        // var_dump($params);
+        // var_dump($_FILES);
+        // die;
         if ($this->getRequestMethod() == "POST") {
 
             $objService = new FilesService;
