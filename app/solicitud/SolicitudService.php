@@ -223,6 +223,7 @@ class SolicitudService
         }
 
         if ($params["estado"] === "CORREGIR") {
+            $params["observacion"]=($params["observacion"] === 'null')?null:$params["observacion"];
             $estado = 5;
             $sqlQuery = "UPDATE RMAMH_Solicitud SET estado_id=?, observacion=?,modified_at=CURRENT_TIMESTAMP WHERE id_solicitud=? AND deleted_at IS NULL";
             $bindParams = [$estado, $params["observacion"], $params["solicitud"]];
