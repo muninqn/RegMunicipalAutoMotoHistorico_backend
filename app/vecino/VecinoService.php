@@ -27,8 +27,10 @@ class VecinoService
         return $database->ejecutarSqlUpdateDelete($sqlQuery, $bindParams);
     }
     public function obtenerIdVecino($params){
-        $sqlQuery = "SELECT id_vecino FROM RMAMH_Vecino WHERE wap_persona=? OR documento=?";
-        $bindParams = [$params['wap_persona'], $params['documento']];
+        $sqlQuery = "SELECT id_vecino,Nombre,CorreoElectronico,emailAlternativo FROM RMAMH_Vecino 
+        INNER JOIN wapPersonas ON  wap_persona = ReferenciaID
+        WHERE wap_persona=?";
+        $bindParams = [$params['wap_persona']];
 
         $database = new BaseDatos;
         $database->connect();
