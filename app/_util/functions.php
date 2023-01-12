@@ -91,14 +91,15 @@ function getDireccionArchivoAdjunto($nombreProyecto, $nombreArchivo, $idSolicitu
 
     if (PATH_FILE_LOCAL) {
         $target_path_local = $idSolicitud != null
-            ? "../../../projects_files/" . $nombreProyecto . "/" . $idSolicitud . "/"
-            : "../../../projects_files/" . $nombreProyecto . "/nodeberiapasar/" . $idSolicitud . "/";
+            ? URL_FILE_LOCAL . $nombreProyecto . "/" . $idSolicitud . "/"
+            : URL_FILE_LOCAL . $nombreProyecto . "/nodeberiapasar/" . $idSolicitud . "/";
     } else {
         $target_path_local = $idSolicitud != null
             ? PATH_FILE_SERVER . $nombreProyecto . "/" . $idSolicitud . "/"
             : PATH_FILE_SERVER . $nombreProyecto . "/nodeberiapasar/" . $idSolicitud . "/";
     }
-
+    // var_dump($target_path_local);
+    // die;
     if (!file_exists($target_path_local)) {
         mkdir($target_path_local, 0755, true);
     };
@@ -130,8 +131,8 @@ function obtenerExtensionArchivo($fileType)
     return $extension;
 }
 /* Funcion que recibe el base64 del archivo y retorna */
-function obtenerArchivo($fileType)
-{
+function obtenerArchivo($fileType,$idSolicitud)
+{   
     $fileExtension = pathinfo($fileType, PATHINFO_EXTENSION);
 
     // Definimos el tipo de archivo
@@ -142,7 +143,21 @@ function obtenerArchivo($fileType)
     }
 
     // Obtenemos el archivo y lo convertimos a base64
-    $fileData = file_get_contents($fileType);
+    if (PATH_FILE_LOCAL) {
+        if (str_contains($fileType,URL_FILE_LOCAL) || str_contains($fileType,'projects_files')) {
+            $fileData = file_get_contents($fileType);
+        }else{
+            $pathArchivo=URL_FILE_LOCAL.DIR_PROJECT_NAME."/".$idSolicitud."/".$fileType;
+            $fileData = file_get_contents($pathArchivo);
+        }
+    }else{
+        if (str_contains($fileType,PATH_FILE_SERVER) || str_contains($fileType,'Dataserver')) {
+            $fileData = file_get_contents($fileType);
+        }else{
+            $pathArchivo=PATH_FILE_SERVER.DIR_PROJECT_NAME."/".$idSolicitud."/".$fileType;
+            $fileData = file_get_contents($pathArchivo);
+        }
+    }
     $base64File = "data:$fileMimeType;base64," . base64_encode($fileData);
     return $base64File;
 }
