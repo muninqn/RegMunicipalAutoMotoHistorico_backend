@@ -51,6 +51,8 @@ class SolicitudController extends BaseController
             if (isset($params['id_solicitud'])) {
                 $objService = new SolicitudService;
                 $arrSolicitudes = $objService->selectSolicitudPorID($params);
+                $adjuntos=$objService->selectAdjuntosSolicitudPorID($params);
+                $arrSolicitudes["nombre_archivo"] = (count($adjuntos) > 0)?$adjuntos:null;
                 if (isset($arrSolicitudes)) {
                     $arrSolicitudes["FechaNacimiento"] = date("d-m-Y", strtotime($arrSolicitudes["FechaNacimiento"]));
 
@@ -58,12 +60,25 @@ class SolicitudController extends BaseController
 
                         if ($key === "path_declaracion_jurada" || $key === "path_titulo" || $key === "path_boleto_compra" || $key === "path_fotografia1" || $key === "path_fotografia2" || $key === "path_fotografia3" || $key === "pathEmpresaDocumento" || $key === 'pathFotoVehiculoAdmin' || $key === 'pathFotoVehiculoAdmin2') {
                             if ($value !== null) {
-
-                                $base64File = obtenerArchivo($value);
+                                $base64File = obtenerArchivo($value,$params["id_solicitud"]);
                                 $arrSolicitudes[$key] = $base64File;
                             }
                         }
                     }
+                    if (isset($arrSolicitudes["nombre_archivo"])) {
+                        // var_dump($arrSolicitudes["nombre_archivo"]);
+                        foreach ($arrSolicitudes["nombre_archivo"] as $indice => $archivo) {
+                            // var_dump($archivo);
+                            $keyAdjunto= explode(".",explode("-",$archivo["nombre_archivo"])[1])[0];
+                            $idAdjunto=$archivo["id_archivo"];
+                            $archivoB64=obtenerArchivo($archivo["nombre_archivo"],$params["id_solicitud"]);
+                            $arrSolicitudes["nombre_archivo"][$keyAdjunto]["id_path_sellado"]=$idAdjunto;
+                            $arrSolicitudes["nombre_archivo"][$keyAdjunto]["base64"]=$archivoB64;
+                            unset($arrSolicitudes["nombre_archivo"][$indice]);
+                        }
+                    }
+                    // var_dump($arrSolicitudes);
+                    // die;
                     $response = crearRespuestaSolicitud(200, "OK", "Se recuperaron las solicitudes", $arrSolicitudes);
                 } else {
                     $response = crearRespuestaSolicitud(200, "OK", "No hay solicitudes", $arrSolicitudes);

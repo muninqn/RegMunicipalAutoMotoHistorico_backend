@@ -59,6 +59,13 @@ class FilesController extends BaseController
                     $updateVecino = $objServiceVecino->updateVecino($params);
                     if ($updateVecino != 0) {
                         $solicitudHistorial = $objServiceSolicitud->selectSolicitudParaHistorico($params);
+                        $adjuntosSolicitudHistorico = $objServiceSolicitud->selectAdjuntosSolicitudPorID($params);
+                        if (count($adjuntosSolicitudHistorico) > 0) {
+                            foreach ($adjuntosSolicitudHistorico as $clave => $archivo) {
+                                $keyAdjunto= explode(".",explode("-",$archivo["nombre_archivo"])[1])[0];
+                                $solicitudHistorial[$keyAdjunto]=$archivo;
+                            }
+                        }
                         // if (isset($insertSolicitudHistorico)) {
                             $archivos=false;
                             $sinArchivos=false;
@@ -67,20 +74,39 @@ class FilesController extends BaseController
                                 $extension = $objService->validarExtensionArchivos($_FILES);
                                 if (isset($tamaño)) {
                                     if (isset($extension)) {
-                                    $idSolicitud = $params['id_solicitud'];
-                                    $arrPath = [];
-                                    foreach ($_FILES as $key => $value) {
-                                        $nombreArchivo = "solicitud_" . $idSolicitud . "-" . $key . obtenerExtensionArchivo($value['type']);
-                                        //$nombreArchivo = "licencia_" . $this->getIdTramite() . "_" . $params['descripcionArchivo'];
-                                        $filePathSolicitud = getDireccionArchivoAdjunto("RMAMH", $nombreArchivo, $idSolicitud);
-                                        if (file_exists($filePathSolicitud . $nombreArchivo)) {
-                                            unlink($filePathSolicitud . $nombreArchivo);
+                                        $idSolicitud = $params['id_solicitud'];
+                                        $arrPath = [];
+                                        foreach ($_FILES as $key => $value) {
+                                            $nombreArchivo = "solicitud_" . $idSolicitud . "-" . $key . obtenerExtensionArchivo($value['type']);
+                                            //$nombreArchivo = "licencia_" . $this->getIdTramite() . "_" . $params['descripcionArchivo'];
+                                            $filePathSolicitud = getDireccionArchivoAdjunto("RMAMH", $nombreArchivo, $idSolicitud);
+                                            if (file_exists($filePathSolicitud . $nombreArchivo)) {
+                                                unlink($filePathSolicitud . $nombreArchivo);
+                                            }
+                                            $archivos = $objService->subirArchivoServidor($value['tmp_name'], $value['type'], $value['size'], $filePathSolicitud);
+                                            $arrPath[$key] = $nombreArchivo;
+                                            $params[$key] = $nombreArchivo;
+                                            if ($archivos) {
+                                                if ($key === "path_sellado") {
+                                                    if (array_key_exists("id_$key",$params)) {
+                                                        //update archivo adjundo sellado
+                                                        $objServiceSolicitud->updatePathAdjuntos($params,$key,$nombreArchivo);
+                                                    } else {
+                                                        //insert archivo adjunto
+                                                        $objServiceSolicitud->insertPathAdjuntos($params,$key,$nombreArchivo);
+                                                    }
+                                                    
+                                                }   
+                                            }else{
+                                                break;
+                                            }
+                                            //Actualizar path de archivos en solicitud por cada archivo armar array de paths y update todo de una
                                         }
-                                        $archivos = $objService->subirArchivoServidor($value['tmp_name'], $value['type'], $value['size'], $filePathSolicitud);
-                                        $arrPath[$key] = $filePathSolicitud;
-                                        $params[$key] = $filePathSolicitud;
-                                        //Actualizar path de archivos en solicitud por cada archivo armar array de paths y update todo de una
-                                    }
+                                        // var_dump("se rompe?");
+                                        // die;
+                                        $objServiceSolicitud->updatePathSolcitud($idSolicitud, $arrPath);
+                                        // var_dump("se rompe?");
+                                        // die;
                                     } else {
                                         $response = crearRespuestaSolicitud(400, "error extencion no valida de algun archivo", $extension);
                                     }
@@ -92,9 +118,12 @@ class FilesController extends BaseController
                             }
 
                             if ($sinArchivos || $archivos) {
+
                                 $insertSolicitud = $objServiceSolicitud->updateRevisionSolicitud($params, $solicitudHistorial);
                                 if ($insertSolicitud != 0) {
                                     $objServiceSolicitud->insertSolicitudHistorico($solicitudHistorial,$params);
+                                    var_dump("se rompio?");
+                                    die;
                                     $insertSolicitud = $objServiceSolicitud->insertOperacion($params['id_solicitud'], $params["wap_persona"],1);
                                     if ($params["esEmpresa"] !== 'false') {
                                         $buscarEmpresa= $empresaService->verificarExisteCuitEmpresa($params["empresaCuit"]);
@@ -137,6 +166,7 @@ class FilesController extends BaseController
                             $params['vecino_id'] = $insertVecino;
                             
                             $insertSolicitud = $objServiceSolicitud->insertSolicitud($params);
+
                             if ($insertSolicitud != -1) {
                                 $idSolicitud = $insertSolicitud;
                                 $params["id_solicitud"]=$idSolicitud;
@@ -160,9 +190,14 @@ class FilesController extends BaseController
                                     //$nombreArchivo = "licencia_" . $this->getIdTramite() . "_" . $params['descripcionArchivo'];
                                     $filePathSolicitud = getDireccionArchivoAdjunto("RMAMH", $nombreArchivo, $idSolicitud);
                                     $objService->subirArchivoServidor($value['tmp_name'], $value['type'], $value['size'], $filePathSolicitud);
-                                    $arrPath[$key] = $filePathSolicitud;
+                                    if ($key === "path_sellado") {
+                                        $objServiceSolicitud->insertPathAdjuntos($params,$key,$nombreArchivo);
+                                    }else{
+                                        $arrPath[$key] = $nombreArchivo;
+                                    }
                                     //Actualizar path de archivos en solicitud por cada archivo armar array de paths y update todo de una
                                 }
+
                                 $data = $objServiceSolicitud->updatePathSolcitud($idSolicitud, $arrPath);
                                 // if ($params["esEmpresa"] !== 'false') {
                                 //     $empresaService->updatePathEmpresa($params["empresa_id"], $arrPath["pathEmpresaDocumento"]);
