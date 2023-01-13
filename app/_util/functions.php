@@ -134,8 +134,8 @@ function obtenerExtensionArchivo($fileType)
     return $extension;
 }
 /* Funcion que recibe el base64 del archivo y retorna */
-function obtenerArchivo($fileType)
-{
+function obtenerArchivo($fileType,$idSolicitud)
+{   
     $fileExtension = pathinfo($fileType, PATHINFO_EXTENSION);
 
     // Definimos el tipo de archivo
@@ -146,6 +146,14 @@ function obtenerArchivo($fileType)
     }
 
     // Obtenemos el archivo y lo convertimos a base64
+    if (!(str_contains($fileType,"RMAMH"))) {
+        if (PATH_FILE_LOCAL) {
+            $fileType="../../../projects_files/RMAMH/".$idSolicitud."/".$fileType;
+        }else{
+            $fileType=PATH_FILE_SERVER . "RMAMH/".$idSolicitud."/".$fileType;
+        }
+    }
+    
     $fileData = file_get_contents($fileType);
     $base64File = "data:$fileMimeType;base64," . base64_encode($fileData);
     return $base64File;
