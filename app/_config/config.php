@@ -41,7 +41,9 @@ define('DB_CHARSET', PROD ? $_ENV['DB_CHARSET'] : 'utf8');
 /* Configuracion del path fIle */
 define('PATH_FILE_LOCAL', $_ENV['PATH_FILE_LOCAL'] == 'true' ? true : false);
 define('PATH_FILE_SERVER', $_ENV['PROD'] == 'true' ? "E:/Dataserver/Produccion/projects_files/" : "E:/Dataserver/Replica/projects_files/"); 
-
+define('TB_RMAMH_Solicitud', $_ENV['TB_RMAMH_Solicitud']); 
+define('TB_RMAMH_Archivos', $_ENV['TB_RMAMH_Archivos']); 
+define('TB_RMAMH_Vecino', $_ENV['TB_RMAMH_Vecino']); 
 /* Configuración de tablas (Ejemplos) */
 /*define('USUARIOS', $_ENV['DB_USUARIOS_TABLE']);
 define('SOLICITUDES', $_ENV['DB_SOLICITUDES_TABLE']);
