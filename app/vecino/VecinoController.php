@@ -41,4 +41,26 @@ class VecinoController extends BaseController
         }
         return $response;
     }
+    private function verificarImagenVecino($params)
+    {
+        if ($this->getRequestMethod() == "POST") {
+            // $params["wap_persona"] = $this->getIdWapPersona();
+            $objService = new VecinoService;
+            $arrDatosVecino = $objService->obtenerDniGeneroVecino($params);
+            if (isset($arrDatosVecino)) {
+                $img = verificarImagenRennaper($arrDatosVecino['Documento'],$arrDatosVecino['Genero']);
+                if ($img !== FALSE) {
+                    $response = crearRespuestaSolicitud(200, "OK", "Tiene imagen", "SI");
+                }else{
+                    $response = crearRespuestaSolicitud(200, "OK", "No tiene imagen", NULL);
+                }
+            } else {
+                $response = crearRespuestaSolicitud(200, "OK", "No hay datos vecino", $arrDatosVecino);
+            }
+            $response['headers'] = ['HTTP/1.1 200 OK'];
+        } else {
+            $response = crearRespuestaSolicitud(400, "error", "Metodo HTTP equivocado.");
+        }
+        return $response;
+    }
 }

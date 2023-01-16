@@ -13,8 +13,8 @@ class SolicitudService
         $params['partes_no_originales'] = ($params['partes_no_originales'] === "null" || $params['partes_no_originales'] === "") ? null : $params['partes_no_originales'];
         $params["esEmpresa"]=($params["esEmpresa"] === 'false')?0:true;
 
-        $sqlQuery = "INSERT INTO RMAMH_Solicitud (vecino_id, estado_id, marca, tipo, modelo, motor, chasis, fecha_fabricacion, caracteristicas_historia, otros, partes_no_originales,esEmpresa) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)";
-        $bindParams = [$params['vecino_id'], $estadoInicial, $params['marca'], $params['tipo'], $params['modelo'], $params['motor'], $params['chasis'], $params['fecha_fabricacion'], $params['caracteristicas_historia'], $params['otros'], $params['partes_no_originales'], $params["esEmpresa"]];
+        $sqlQuery = "INSERT INTO RMAMH_Solicitud (vecino_id, estado_id, marca, tipo, modelo, motor, chasis, fecha_fabricacion, caracteristicas_historia, otros, partes_no_originales,esEmpresa,numero_recibo) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)";
+        $bindParams = [$params['vecino_id'], $estadoInicial, $params['marca'], $params['tipo'], $params['modelo'], $params['motor'], $params['chasis'], $params['fecha_fabricacion'], $params['caracteristicas_historia'], $params['otros'], $params['partes_no_originales'], $params["esEmpresa"],$params["numero_recibo"]];
 
         $database = new BaseDatos;
         $database->connect();
@@ -51,7 +51,7 @@ class SolicitudService
         $bindParams = [$estadoInicial];
         foreach ($historial as $key => $value) {
             if (array_key_exists($key, $params)) {
-                if (!($key === 'estado_id') && !($key === 'empresaCuit') && !($key === 'empresaRazonSocial')) {
+                if (!($key === 'estado_id') && !($key === 'empresaCuit') && !($key === 'empresaRazonSocial') && !($key === 'path_sellado')) {
 
                     if ($historial[$key] !== $params[$key]) {
                         $sqlQuery .= ", $key=?";
@@ -69,6 +69,9 @@ class SolicitudService
 
     public function insertSolicitudHistorico($paramsAnteriores, $paramsNuevos)
     {   
+        // var_dump($paramsAnteriores);
+        // var_dump($paramsNuevos);
+        // die;
         $response=0;
         if (array_key_exists("esEmpresa",$paramsNuevos)) {
             $paramsNuevos["esEmpresa"] = ($paramsNuevos["esEmpresa"] === 'false') ? '0' : '1';
@@ -80,9 +83,10 @@ class SolicitudService
                 if ($paramsNuevos[$key] === 'null' || $paramsNuevos[$key] === "") {
                     $paramsNuevos[$key] = NULL;
                 }
-                if ($paramsAnteriores[$key] !== $paramsNuevos[$key]) {
+                if ( str_contains($key,"path")|| $paramsAnteriores[$key] !== $paramsNuevos[$key]) {
                     
                     $sqlQuery = "INSERT INTO RMAMH_SolicitudHistorico (solicitud_id,campo,valor_anterior,valor_nuevo) VALUES(?,?,?,?)";
+
                     $bindParams = [$paramsNuevos['id_solicitud'], $key, $paramsAnteriores[$key], $paramsNuevos[$key]];
                     $database->connect();
                     $response = $database->ejecutarSqlInsert($sqlQuery, $bindParams);
@@ -90,6 +94,41 @@ class SolicitudService
             }
         }
         return $response;
+    }
+
+    public function insertPathAdjuntos($params, $indice,$nombreArchivo)
+    {   
+        $tbAdjuntos=TB_RMAMH_Archivos;
+        $sqlQuery = "INSERT INTO $tbAdjuntos (solicitud_id,nombre_archivo,estado_id) VALUES (?,?,?)";
+        $bindParams = [];
+        if ($indice === "path_sellado") {
+            array_push($bindParams, $params["id_solicitud"]);
+            array_push($bindParams, $nombreArchivo);
+            array_push($bindParams, 1);
+        }
+        if (count($bindParams) > 0) {
+            $database = new BaseDatos;
+            $database->connect();
+            return $database->ejecutarSqlUpdateDelete($sqlQuery, $bindParams);
+        }
+    }
+
+    public function updatePathAdjuntos($params, $indice,$nombreArchivo)
+    {   
+        $tbAdjuntos=TB_RMAMH_Archivos;
+        $sqlQuery = "UPDATE $tbAdjuntos SET nombre_archivo=?";
+        $bindParams = [];
+        if ($indice === "path_sellado") {
+            $sqlQuery.=" WHERE solicitud_id=? AND id_archivo=? AND deleted_at IS NULL";
+            array_push($bindParams, $nombreArchivo);
+            array_push($bindParams, $params["id_solicitud"]);
+            array_push($bindParams, $params["id_$indice"]);
+        }
+        if (count($bindParams) > 0) {
+            $database = new BaseDatos;
+            $database->connect();
+            return $database->ejecutarSqlUpdateDelete($sqlQuery, $bindParams);
+        }
     }
 
     public function updatePathSolcituModificacion($idSolicitud, $arrPath)
@@ -161,36 +200,49 @@ class SolicitudService
         $database->connect();
         return $database->ejecutarSqlUpdateDelete($sqlQuery, $bindParams);
     }
+
     public function updatePathSolcitud($idSolicitud, $arrPath)
     {
-        $sqlQuery = "UPDATE RMAMH_Solicitud SET path_declaracion_jurada=?,path_fotografia1=?";
-        $bindParams = [$arrPath['path_declaracion_jurada'], $arrPath['path_fotografia1']];
+        $sqlQuery = "UPDATE RMAMH_Solicitud SET";
+        $bindParams = [];
+        if (array_key_exists('path_declaracion_jurada', $arrPath)) {
+            $sqlQuery .= (count($bindParams) > 0 )?" ,path_declaracion_jurada=?":" path_declaracion_jurada=?";
+            array_push($bindParams, $arrPath['path_declaracion_jurada']);
+        }
+
+        if (array_key_exists('path_fotografia1', $arrPath)) {
+            $sqlQuery .= (count($bindParams) > 0 )?" ,path_fotografia1=?":" path_fotografia1=?";
+            array_push($bindParams, $arrPath['path_fotografia1']);
+        }
+
         if (array_key_exists('pathEmpresaDocumento', $arrPath)) {
-            $sqlQuery .= " ,pathEmpresaDocumento=?";
+            $sqlQuery .= (count($bindParams) > 0 )?" ,pathEmpresaDocumento=?":" pathEmpresaDocumento=?";
             array_push($bindParams, $arrPath['pathEmpresaDocumento']);
         }
         if (array_key_exists('path_titulo', $arrPath)) {
-            $sqlQuery .= " ,path_titulo=?";
+            $sqlQuery .= (count($bindParams) > 0 )?" ,path_titulo=?":" path_titulo=?";
             array_push($bindParams, $arrPath['path_titulo']);
         }
         if (array_key_exists('path_boleto_compra', $arrPath)) {
-            $sqlQuery .= " ,path_boleto_compra=?";
+            $sqlQuery .= (count($bindParams) > 0 )?" ,path_boleto_compra=?":" path_boleto_compra=?";
             array_push($bindParams, $arrPath['path_boleto_compra']);
         }
         if (array_key_exists('path_fotografia2', $arrPath)) {
-            $sqlQuery .= " ,path_fotografia2=?";
+            $sqlQuery .= (count($bindParams) > 0 )?" ,path_fotografia2=?":" path_fotografia2=?";
             array_push($bindParams, $arrPath['path_fotografia2']);
         }
         if (array_key_exists('path_fotografia3', $arrPath)) {
-            $sqlQuery .= " ,path_fotografia3=?";
+            $sqlQuery .= (count($bindParams) > 0 )?" ,path_fotografia3=?":" path_fotografia3=?";
             array_push($bindParams, $arrPath['path_fotografia3']);
         }
-        $sqlQuery .= " WHERE id_solicitud=? AND deleted_at IS NULL";
-        array_push($bindParams, $idSolicitud);
+        if (count($bindParams) > 0) {
+            $sqlQuery .= " WHERE id_solicitud=? AND deleted_at IS NULL";
+            array_push($bindParams, $idSolicitud);
+            $database = new BaseDatos;
+            $database->connect();
+            return $database->ejecutarSqlUpdateDelete($sqlQuery, $bindParams);
+        }
 
-        $database = new BaseDatos;
-        $database->connect();
-        return $database->ejecutarSqlUpdateDelete($sqlQuery, $bindParams);
     }
 
     public function updateEstadoSolcitud($params)
@@ -223,6 +275,7 @@ class SolicitudService
         }
 
         if ($params["estado"] === "CORREGIR") {
+            $params["observacion"]=($params["observacion"] === 'null')?null:$params["observacion"];
             $estado = 5;
             $sqlQuery = "UPDATE RMAMH_Solicitud SET estado_id=?, observacion=?,modified_at=CURRENT_TIMESTAMP WHERE id_solicitud=? AND deleted_at IS NULL";
             $bindParams = [$estado, $params["observacion"], $params["solicitud"]];
@@ -259,6 +312,7 @@ class SolicitudService
     }
     public function selectSolicitudParaHistorico($params)
     {
+        $tbAdjuntos=TB_RMAMH_Archivos;
         $sqlQuery = "SELECT *
         FROM RMAMH_Solicitud
         LEFT JOIN RMAMH_Empresa ON RMAMH_Empresa.id_empresa = RMAMH_Solicitud.empresa_id
@@ -285,6 +339,20 @@ class SolicitudService
         $database->connect();
         return $database->ejecutarSqlSelect($sqlQuery, $bindParams);
     }
+
+    public function selectAdjuntosSolicitudPorID($params)
+    {
+        $tbAdjuntos=TB_RMAMH_Archivos;
+        $sqlQuery = "SELECT *
+        FROM $tbAdjuntos WHERE solicitud_id=? AND deleted_at IS NULL";
+        //AND deleted_at is null
+        $bindParams = [$params['id_solicitud']];
+
+        $database = new BaseDatos;
+        $database->connect();
+        return $database->ejecutarSqlSelectListar($sqlQuery, $bindParams);
+    }
+
     public function verificarSolicitudUsuario($params)
     {
         $sqlQuery = "SELECT *

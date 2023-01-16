@@ -25,6 +25,7 @@ class SolicitudController extends BaseController
         }
         return $response;
     }
+    
     private function obtenerSolicitudes()
     {
         if ($this->getRequestMethod() == "POST") {
@@ -32,7 +33,7 @@ class SolicitudController extends BaseController
             $arrSolicitudes = $objService->selectSolicitudes();
             if (isset($arrSolicitudes)) {
                 foreach ($arrSolicitudes as $key => $value) {
-                    $arrSolicitudes[$key]["created_at"]=date("d-m-Y",strtotime($value["created_at"]));
+                    $arrSolicitudes[$key]["created_at"] = date("d-m-Y", strtotime($value["created_at"]));
                 }
                 $response = crearRespuestaSolicitud(200, "OK", "Se recuperaron las solicitudes", $arrSolicitudes);
             } else {
@@ -50,19 +51,35 @@ class SolicitudController extends BaseController
             if (isset($params['id_solicitud'])) {
                 $objService = new SolicitudService;
                 $arrSolicitudes = $objService->selectSolicitudPorID($params);
+                $adjuntos=$objService->selectAdjuntosSolicitudPorID($params);
+                $arrSolicitudes["nombre_archivo"] = (count($adjuntos) > 0)?$adjuntos:null;
                 if (isset($arrSolicitudes)) {
                     $arrSolicitudes["FechaNacimiento"] = date("d-m-Y", strtotime($arrSolicitudes["FechaNacimiento"]));
 
                     foreach ($arrSolicitudes as $key => $value) {
 
-                        if ($key === "path_declaracion_jurada" || $key === "path_titulo" || $key === "path_boleto_compra" || $key === "path_fotografia1" || $key === "path_fotografia2" || $key === "path_fotografia3" || $key === "pathEmpresaDocumento" || $key === 'pathFotoVehiculoAdmin'|| $key === 'pathFotoVehiculoAdmin2') {
+                        if ($key === "path_declaracion_jurada" || $key === "path_titulo" || $key === "path_boleto_compra" || $key === "path_fotografia1" || $key === "path_fotografia2" || $key === "path_fotografia3" || $key === "pathEmpresaDocumento" || $key === 'pathFotoVehiculoAdmin' || $key === 'pathFotoVehiculoAdmin2') {
                             if ($value !== null) {
-
-                                $base64File = obtenerArchivo($value);
+                                $base64File = obtenerArchivo($value,$params["id_solicitud"]);
                                 $arrSolicitudes[$key] = $base64File;
                             }
                         }
                     }
+                    
+                    if (isset($arrSolicitudes["nombre_archivo"])) {
+                        // var_dump($arrSolicitudes["nombre_archivo"]);
+                        foreach ($arrSolicitudes["nombre_archivo"] as $indice => $archivo) {
+                            // var_dump($archivo);
+                            $keyAdjunto= explode(".",explode("-",$archivo["nombre_archivo"])[1])[0];
+                            $idAdjunto=$archivo["id_archivo"];
+                            $archivoB64=obtenerArchivo($archivo["nombre_archivo"],$params["id_solicitud"]);
+                            $arrSolicitudes["nombre_archivo"][$keyAdjunto]["id_path_sellado"]=$idAdjunto;
+                            $arrSolicitudes["nombre_archivo"][$keyAdjunto]["base64"]=$archivoB64;
+                            unset($arrSolicitudes["nombre_archivo"][$indice]);
+                        }
+                    }
+                    // var_dump($arrSolicitudes);
+                    // die;
                     $response = crearRespuestaSolicitud(200, "OK", "Se recuperaron las solicitudes", $arrSolicitudes);
                 } else {
                     $response = crearRespuestaSolicitud(200, "OK", "No hay solicitudes", $arrSolicitudes);
@@ -84,18 +101,18 @@ class SolicitudController extends BaseController
             $objBaseService = new BaseService;
             $params["id_solicitud"] = $params["solicitud"];
             $datosSolicitud = $objService->selectSolicitudPorID($params);
-            $datosSolicitud["nombre"]=$datosSolicitud["Nombre"];
-            $datosSolicitud["email"]=$datosSolicitud["CorreoElectronico"];
+            $datosSolicitud["nombre"] = $datosSolicitud["Nombre"];
+            $datosSolicitud["email"] = $datosSolicitud["CorreoElectronico"];
             // if ($objBaseService->gestionarEnvioMail($datosSolicitud, $params["estado"])) {
-                $estadoSolicitud = $objService->updateEstadoSolcitud($params);
-                if ($estadoSolicitud != 0) {
-                    $objService->insertOperacion($params["solicitud"], $this->getIdWapPersona(),6);
-                    $response = crearRespuestaSolicitud(200, "OK", "Se Aprobó la Documentacion Correctamente.", $estadoSolicitud);
-                    $objBaseService->gestionarEnvioMail($datosSolicitud, $params["estado"]);
-                } else {
-                    $response = crearRespuestaSolicitud(400, "Error", "No se ha podido aprobar la Documentacion de la solicitud.");
-                }
-                $response['headers'] = ['HTTP/1.1 200 OK'];
+            $estadoSolicitud = $objService->updateEstadoSolcitud($params);
+            if ($estadoSolicitud != 0) {
+                $objService->insertOperacion($params["solicitud"], $this->getIdWapPersona(), 6);
+                $response = crearRespuestaSolicitud(200, "OK", "Se Aprobó la Documentacion Correctamente.", $estadoSolicitud);
+                $objBaseService->gestionarEnvioMail($datosSolicitud, $params["estado"]);
+            } else {
+                $response = crearRespuestaSolicitud(400, "Error", "No se ha podido aprobar la Documentacion de la solicitud.");
+            }
+            $response['headers'] = ['HTTP/1.1 200 OK'];
             // } else {
             //     $response = crearRespuestaSolicitud(400, "Error", "No se pudo enviar email");
             // }
@@ -117,8 +134,8 @@ class SolicitudController extends BaseController
 
                     if (isset($params["patente"])) {
                         if (array_key_exists('edicionPatente', $params)) {
-                            $exitePatente=null;
-                        }else{
+                            $exitePatente = null;
+                        } else {
                             $exitePatente = $objService->buscarPatente($params);
                         }
                         if (!isset($exitePatente)) {
@@ -126,8 +143,8 @@ class SolicitudController extends BaseController
                             $params["id_solicitud"] = $params["solicitud"];
                             $objBaseService = new BaseService();
                             $datosSolicitud = $objService->selectSolicitudPorID($params);
-                            $datosSolicitud["nombre"]=$datosSolicitud["Nombre"];
-                            $datosSolicitud["email"]=$datosSolicitud["CorreoElectronico"];
+                            $datosSolicitud["nombre"] = $datosSolicitud["Nombre"];
+                            $datosSolicitud["email"] = $datosSolicitud["CorreoElectronico"];
                             if (isset($_FILES)) {
                                 foreach ($_FILES as $key => $value) {
                                     $nombreArchivo = "solicitud_" . $params["id_solicitud"] . "-" . $key . obtenerExtensionArchivo($value['type']);
@@ -138,25 +155,25 @@ class SolicitudController extends BaseController
                                     //Actualizar path de archivos en solicitud por cada archivo armar array de paths y update todo de una
                                 }
                             }
-                    
+
                             if (array_key_exists('edicionPatente', $params)) {
                                 $solicitudHistorial = $objService->selectSolicitudParaHistorico($params);
                                 $params["estado"] = "EDICION_PATENTE";
-                                $insertSolicitudHistorico = $objService->insertSolicitudHistorico($solicitudHistorial,$params);
+                                $insertSolicitudHistorico = $objService->insertSolicitudHistorico($solicitudHistorial, $params);
                             }
 
                             if ($insertSolicitudHistorico !== -1) {
                                 $estadoSolicitud = $objService->updateEstadoSolcitud($params);
                                 if ($estadoSolicitud != 0) {
                                     // if ($objBaseService->gestionarEnvioMail($datosSolicitud, $params["estado"])) {
-                                        if (array_key_exists('edicionPatente', $params)) {
-                                            $objService->insertOperacion($params["solicitud"], $this->getIdWapPersona(),2);
-                                            $response = crearRespuestaSolicitud(200, "OK", "Se Modifico la solicitud correctamente", $estadoSolicitud);
-                                        } else {
-                                            $objService->insertOperacion($params["solicitud"], $this->getIdWapPersona(),2);
-                                            $response = crearRespuestaSolicitud(200, "OK", "Se Aprobó la solicitud correctamente", $estadoSolicitud);
-                                        }
-                                        $objBaseService->gestionarEnvioMail($datosSolicitud, $params["estado"]);
+                                    if (array_key_exists('edicionPatente', $params)) {
+                                        $objService->insertOperacion($params["solicitud"], $this->getIdWapPersona(), 2);
+                                        $response = crearRespuestaSolicitud(200, "OK", "Se Modifico la solicitud correctamente", $estadoSolicitud);
+                                    } else {
+                                        $objService->insertOperacion($params["solicitud"], $this->getIdWapPersona(), 2);
+                                        $response = crearRespuestaSolicitud(200, "OK", "Se Aprobó la solicitud correctamente", $estadoSolicitud);
+                                    }
+                                    $objBaseService->gestionarEnvioMail($datosSolicitud, $params["estado"]);
                                     // } else {
                                     //     $response = crearRespuestaSolicitud(400, "Error", "No se pudo enviar email");
                                     // }
@@ -185,22 +202,23 @@ class SolicitudController extends BaseController
         return $response;
     }
 
-    private function verificarPatente($params){
+    private function verificarPatente($params)
+    {
         if ($this->getRequestMethod() == "POST") {
             $objService = new SolicitudService;
             $exitePatente = $objService->buscarPatente($params);
             if (!isset($exitePatente)) {
                 $response = crearRespuestaSolicitud(200, "OK", "Patente Aceptada");
                 $response['headers'] = ['HTTP/1.1 200 OK'];
-
-            }else{
+            } else {
                 $response = crearRespuestaSolicitud(400, "error", "Ya existe la patente asignada.");
             }
-        }else{
+        } else {
             $response = crearRespuestaSolicitud(400, "error", "Metodo HTTP equivocado.");
         }
         return $response;
     }
+
     private function revisarSolicitud($params)
     {
         if ($this->getRequestMethod() == "POST") {
@@ -208,20 +226,20 @@ class SolicitudController extends BaseController
             $objBaseService = new BaseService;
             $params["id_solicitud"] = $params["solicitud"];
             $datosSolicitud = $objService->selectSolicitudPorID($params);
-            $datosSolicitud["nombre"]=$datosSolicitud["Nombre"];
-            $datosSolicitud["email"]=$datosSolicitud["CorreoElectronico"];
+            $datosSolicitud["nombre"] = $datosSolicitud["Nombre"];
+            $datosSolicitud["email"] = $datosSolicitud["CorreoElectronico"];
             // if ($objBaseService->gestionarEnvioMail($datosSolicitud, $params["estado"])) {
 
-                $estadoSolicitud = $objService->updateEstadoSolcitud($params);
-                if ($estadoSolicitud != 0) {
-                    $objService->insertOperacion($params["solicitud"], $this->getIdWapPersona(),5);
-                    $response = crearRespuestaSolicitud(200, "OK", "La solicitud se ha enviado para su revision correctamente.", $estadoSolicitud);
-                    $objBaseService->gestionarEnvioMail($datosSolicitud, $params["estado"]);
-                } else {
-                    $response = crearRespuestaSolicitud(400, "Error", "No se ha podido enviar la solicitud para su revision.");
-                }
-                $response['headers'] = ['HTTP/1.1 200 OK'];
-               
+            $estadoSolicitud = $objService->updateEstadoSolcitud($params);
+            if ($estadoSolicitud != 0) {
+                $objService->insertOperacion($params["solicitud"], $this->getIdWapPersona(), 5);
+                $response = crearRespuestaSolicitud(200, "OK", "La solicitud se ha enviado para su revision correctamente.", $estadoSolicitud);
+                $objBaseService->gestionarEnvioMail($datosSolicitud, $params["estado"]);
+            } else {
+                $response = crearRespuestaSolicitud(400, "Error", "No se ha podido enviar la solicitud para su revision.");
+            }
+            $response['headers'] = ['HTTP/1.1 200 OK'];
+
             // } else {
             //     $response = crearRespuestaSolicitud(400, "Error", "No se pudo enviar email");
             // }
@@ -240,17 +258,17 @@ class SolicitudController extends BaseController
             $params["id_solicitud"] = $params["solicitud"];
             $estadoSolicitud = $objService->updateEstadoSolcitud($params);
             $datosSolicitud = $objService->selectSolicitudPorID($params);
-            $datosSolicitud["nombre"]=$datosSolicitud["Nombre"];
-            $datosSolicitud["email"]=$datosSolicitud["CorreoElectronico"];
+            $datosSolicitud["nombre"] = $datosSolicitud["Nombre"];
+            $datosSolicitud["email"] = $datosSolicitud["CorreoElectronico"];
             // if ($objBaseService->gestionarEnvioMail($datosSolicitud, $params["estado"])) {
-                if ($estadoSolicitud != 0) {
-                    $objService->insertOperacion($params["solicitud"], $this->getIdWapPersona(),3);
-                    $response = crearRespuestaSolicitud(200, "OK", "La solicitud ha rechazado correctamente.", $estadoSolicitud);
-                    $objBaseService->gestionarEnvioMail($datosSolicitud, $params["estado"]);
-                } else {
-                    $response = crearRespuestaSolicitud(400, "Error", "No se ha podido rechazar la solicitud.");
-                }
-                $response['headers'] = ['HTTP/1.1 200 OK'];
+            if ($estadoSolicitud != 0) {
+                $objService->insertOperacion($params["solicitud"], $this->getIdWapPersona(), 3);
+                $response = crearRespuestaSolicitud(200, "OK", "La solicitud ha rechazado correctamente.", $estadoSolicitud);
+                $objBaseService->gestionarEnvioMail($datosSolicitud, $params["estado"]);
+            } else {
+                $response = crearRespuestaSolicitud(400, "Error", "No se ha podido rechazar la solicitud.");
+            }
+            $response['headers'] = ['HTTP/1.1 200 OK'];
             // } else {
             //     $response = crearRespuestaSolicitud(400, "Error", "No se pudo enviar email");
             // }
@@ -259,6 +277,7 @@ class SolicitudController extends BaseController
         }
         return $response;
     }
+
     private function cancelarSolicitud($params)
     {
 
@@ -267,18 +286,18 @@ class SolicitudController extends BaseController
             $objBaseService = new BaseService;
             $params["id_solicitud"] = $params["solicitud"];
             $datosSolicitud = $objService->selectSolicitudPorID($params);
-            $datosSolicitud["nombre"]=$datosSolicitud["Nombre"];
-            $datosSolicitud["email"]=$datosSolicitud["CorreoElectronico"];
+            $datosSolicitud["nombre"] = $datosSolicitud["Nombre"];
+            $datosSolicitud["email"] = $datosSolicitud["CorreoElectronico"];
             // if ($objBaseService->gestionarEnvioMail($datosSolicitud, $params["estado"])) {
-                $estadoSolicitud = $objService->updateEstadoSolcitud($params);
-                if ($estadoSolicitud != 0) {
-                    $objService->insertOperacion($params["solicitud"], $this->getIdWapPersona(),4);
-                    $response = crearRespuestaSolicitud(200, "OK", "La solicitud ha cancelado correctamente.", $estadoSolicitud);
-                    $objBaseService->gestionarEnvioMail($datosSolicitud, $params["estado"]);
-                } else {
-                    $response = crearRespuestaSolicitud(400, "Error", "No se ha podido rechazar la solicitud.");
-                }
-                $response['headers'] = ['HTTP/1.1 200 OK'];
+            $estadoSolicitud = $objService->updateEstadoSolcitud($params);
+            if ($estadoSolicitud != 0) {
+                $objService->insertOperacion($params["solicitud"], $this->getIdWapPersona(), 4);
+                $response = crearRespuestaSolicitud(200, "OK", "La solicitud ha cancelado correctamente.", $estadoSolicitud);
+                $objBaseService->gestionarEnvioMail($datosSolicitud, $params["estado"]);
+            } else {
+                $response = crearRespuestaSolicitud(400, "Error", "No se ha podido rechazar la solicitud.");
+            }
+            $response['headers'] = ['HTTP/1.1 200 OK'];
             // } else {
             //     $response = crearRespuestaSolicitud(400, "Error", "No se pudo enviar email");
             // }
@@ -287,6 +306,7 @@ class SolicitudController extends BaseController
         }
         return $response;
     }
+
     private function buscarSolicitudPorUsuario($params)
     {
         if ($this->getRequestMethod() == "POST") {
@@ -334,6 +354,7 @@ class SolicitudController extends BaseController
         }
         return $response;
     }
+
     private function buscarSolicitudesDelUsuario($params)
     {
         if ($this->getRequestMethod() == "POST") {
@@ -342,7 +363,7 @@ class SolicitudController extends BaseController
                 $solicitudes = $objService->verificarSolicitudesUsuario($params);
                 if (isset($solicitudes)) {
                     foreach ($solicitudes as $key => $value) {
-                        $solicitudes[$key]["created_at"]=date("d-m-Y",strtotime($value["created_at"]));
+                        $solicitudes[$key]["created_at"] = date("d-m-Y", strtotime($value["created_at"]));
                     }
                     $response = crearRespuestaSolicitud(200, "OK", "Existe solicitud vigente", $solicitudes);
                 } else {
