@@ -63,7 +63,7 @@ class FilesController extends BaseController
                         if (count($adjuntosSolicitudHistorico) > 0) {
                             foreach ($adjuntosSolicitudHistorico as $clave => $archivo) {
                                 $keyAdjunto= explode(".",explode("-",$archivo["nombre_archivo"])[1])[0];
-                                $solicitudHistorial[$keyAdjunto]=$archivo;
+                                $solicitudHistorial[$keyAdjunto]=$archivo["nombre_archivo"];
                             }
                         }
                         // if (isset($insertSolicitudHistorico)) {
@@ -122,8 +122,6 @@ class FilesController extends BaseController
                                 $insertSolicitud = $objServiceSolicitud->updateRevisionSolicitud($params, $solicitudHistorial);
                                 if ($insertSolicitud != 0) {
                                     $objServiceSolicitud->insertSolicitudHistorico($solicitudHistorial,$params);
-                                    var_dump("se rompio?");
-                                    die;
                                     $insertSolicitud = $objServiceSolicitud->insertOperacion($params['id_solicitud'], $params["wap_persona"],1);
                                     if ($params["esEmpresa"] !== 'false') {
                                         $buscarEmpresa= $empresaService->verificarExisteCuitEmpresa($params["empresaCuit"]);
