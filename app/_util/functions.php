@@ -2,6 +2,7 @@
 require_once("../app/files/FilesController.php");
 require_once("../app/solicitud/SolicitudController.php");
 require_once("../app/vecino/VecinoController.php");
+require_once("../app/empresa/EmpresaController.php");
 
 
 // require_once("../app/delegacion/DelegacionController.php");
@@ -74,6 +75,9 @@ function obtenerController($controllerName)
         case 'vecino': //controlador de vecino
             $controller = new VecinoController();
             break;
+        case 'empresa': //controlador de vecino
+            $controller = new EmpresaController();
+            break;
 
         default: //no se encontro controlador
             $controller = null;
@@ -143,21 +147,17 @@ function obtenerArchivo($fileType,$idSolicitud)
     }
 
     // Obtenemos el archivo y lo convertimos a base64
-    if (PATH_FILE_LOCAL) {
-        if (str_contains($fileType,URL_FILE_LOCAL) || str_contains($fileType,'projects_files')) {
-            $fileData = file_get_contents($fileType);
+    
+    if (!(str_contains($fileType,"RMAMH"))) {
+        if (PATH_FILE_LOCAL) {
+            $fileType="../../../projects_files/RMAMH/".$idSolicitud."/".$fileType;
         }else{
-            $pathArchivo=URL_FILE_LOCAL.DIR_PROJECT_NAME."/".$idSolicitud."/".$fileType;
-            $fileData = file_get_contents($pathArchivo);
-        }
-    }else{
-        if (str_contains($fileType,PATH_FILE_SERVER) || str_contains($fileType,'Dataserver')) {
-            $fileData = file_get_contents($fileType);
-        }else{
-            $pathArchivo=PATH_FILE_SERVER.DIR_PROJECT_NAME."/".$idSolicitud."/".$fileType;
-            $fileData = file_get_contents($pathArchivo);
+            $fileType=PATH_FILE_SERVER . "RMAMH/".$idSolicitud."/".$fileType;
         }
     }
+
+    
+    $fileData = file_get_contents($fileType);
     $base64File = "data:$fileMimeType;base64," . base64_encode($fileData);
     return $base64File;
 }
@@ -253,4 +253,32 @@ function sumarEjeDatosY($original)
 {
     $valor = $original + 4;
     return $valor;
+}
+
+function verificarImagenRennaper($documento,$genero){
+    if ($genero === "M") {
+        $carpeta="MASCULINO";
+    }else{
+        if ($genero === "F") {
+            $carpeta="FEMENINO";
+        }else{
+            if (PATH_FILE_LOCAL) {
+                $carpeta="NO%20BINARIO";
+            }else{
+                $carpeta="NO BINARIO";
+            }
+        }   
+    }
+    
+    if (PATH_FILE_LOCAL) {
+        $direccionAConsultar="https://weblogin.muninqn.gov.ar/DataServerOK/webRenaper/";
+    }else {
+        if (PROD) {
+            $direccionAConsultar="E:/Dataserver/Produccion/webRenaper/";
+        }else{
+            $direccionAConsultar="E:/Dataserver/Replica/webRenaper/";
+        }
+    }
+    $arrContextOptions = array("ssl" => array("verify_peer" => false, "verify_peer_name" => false,),);
+    return @file_get_contents($direccionAConsultar.$carpeta."/".$genero.$documento.".png", false, stream_context_create($arrContextOptions));
 }
