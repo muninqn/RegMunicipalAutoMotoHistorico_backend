@@ -146,6 +146,7 @@ function obtenerArchivo($fileType,$idSolicitud)
     }
 
     // Obtenemos el archivo y lo convertimos a base64
+    
     if (!(str_contains($fileType,"RMAMH"))) {
         if (PATH_FILE_LOCAL) {
             $fileType="../../../projects_files/RMAMH/".$idSolicitud."/".$fileType;
@@ -153,6 +154,7 @@ function obtenerArchivo($fileType,$idSolicitud)
             $fileType=PATH_FILE_SERVER . "RMAMH/".$idSolicitud."/".$fileType;
         }
     }
+
     
     $fileData = file_get_contents($fileType);
     $base64File = "data:$fileMimeType;base64," . base64_encode($fileData);
