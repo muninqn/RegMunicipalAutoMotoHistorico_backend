@@ -65,6 +65,7 @@ class SolicitudController extends BaseController
                             }
                         }
                     }
+                    
                     if (isset($arrSolicitudes["nombre_archivo"])) {
                         // var_dump($arrSolicitudes["nombre_archivo"]);
                         foreach ($arrSolicitudes["nombre_archivo"] as $indice => $archivo) {
