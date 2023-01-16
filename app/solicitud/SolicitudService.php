@@ -51,7 +51,7 @@ class SolicitudService
         $bindParams = [$estadoInicial];
         foreach ($historial as $key => $value) {
             if (array_key_exists($key, $params)) {
-                if (!($key === 'estado_id') && !($key === 'empresaCuit') && !($key === 'empresaRazonSocial')) {
+                if (!($key === 'estado_id') && !($key === 'empresaCuit') && !($key === 'empresaRazonSocial') && !($key === 'path_sellado')) {
 
                     if ($historial[$key] !== $params[$key]) {
                         $sqlQuery .= ", $key=?";
@@ -69,6 +69,9 @@ class SolicitudService
 
     public function insertSolicitudHistorico($paramsAnteriores, $paramsNuevos)
     {   
+        // var_dump($paramsAnteriores);
+        // var_dump($paramsNuevos);
+        // die;
         $response=0;
         if (array_key_exists("esEmpresa",$paramsNuevos)) {
             $paramsNuevos["esEmpresa"] = ($paramsNuevos["esEmpresa"] === 'false') ? '0' : '1';
@@ -80,9 +83,10 @@ class SolicitudService
                 if ($paramsNuevos[$key] === 'null' || $paramsNuevos[$key] === "") {
                     $paramsNuevos[$key] = NULL;
                 }
-                if ($paramsAnteriores[$key] !== $paramsNuevos[$key]) {
+                if ( str_contains($key,"path")|| $paramsAnteriores[$key] !== $paramsNuevos[$key]) {
                     
                     $sqlQuery = "INSERT INTO RMAMH_SolicitudHistorico (solicitud_id,campo,valor_anterior,valor_nuevo) VALUES(?,?,?,?)";
+
                     $bindParams = [$paramsNuevos['id_solicitud'], $key, $paramsAnteriores[$key], $paramsNuevos[$key]];
                     $database->connect();
                     $response = $database->ejecutarSqlInsert($sqlQuery, $bindParams);
