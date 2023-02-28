@@ -1,7 +1,17 @@
 <?php
 class SolicitudService
 {
+    public function verificarSiNumeroReciboExiste($numeroRecibo){
+        $sqlQuery = "SELECT numero_recibo, id_solicitud
+        FROM RMAMH_Solicitud
+        WHERE numero_recibo = ?";
+        //WHERE deleted_at is null
+        $bindParams = [$numeroRecibo];
 
+        $database = new BaseDatos;
+        $database->connect();
+        return $database->ejecutarSqlSelect($sqlQuery, $bindParams);
+    }
     public function insertSolicitud($params)
     {
         $estadoInicial = 1;
