@@ -65,19 +65,19 @@ class SolicitudController extends BaseController
                             }
                         }
                     }
-                    
-                    if (isset($arrSolicitudes["nombre_archivo"])) {
-                        // var_dump($arrSolicitudes["nombre_archivo"]);
-                        foreach ($arrSolicitudes["nombre_archivo"] as $indice => $archivo) {
-                            // var_dump($archivo);
-                            $keyAdjunto= explode(".",explode("-",$archivo["nombre_archivo"])[1])[0];
-                            $idAdjunto=$archivo["id_archivo"];
-                            $archivoB64=obtenerArchivo($archivo["nombre_archivo"],$params["id_solicitud"]);
-                            $arrSolicitudes["nombre_archivo"][$keyAdjunto]["id_path_sellado"]=$idAdjunto;
-                            $arrSolicitudes["nombre_archivo"][$keyAdjunto]["base64"]=$archivoB64;
-                            unset($arrSolicitudes["nombre_archivo"][$indice]);
-                        }
-                    }
+                    //TODO-25042023
+                    // if (isset($arrSolicitudes["nombre_archivo"])) {
+                    //     // var_dump($arrSolicitudes["nombre_archivo"]);
+                    //     foreach ($arrSolicitudes["nombre_archivo"] as $indice => $archivo) {
+                    //         // var_dump($archivo);
+                    //         $keyAdjunto= explode(".",explode("-",$archivo["nombre_archivo"])[1])[0];
+                    //         $idAdjunto=$archivo["id_archivo"];
+                    //         $archivoB64=obtenerArchivo($archivo["nombre_archivo"],$params["id_solicitud"]);
+                    //         $arrSolicitudes["nombre_archivo"][$keyAdjunto]["id_path_sellado"]=$idAdjunto;
+                    //         $arrSolicitudes["nombre_archivo"][$keyAdjunto]["base64"]=$archivoB64;
+                    //         unset($arrSolicitudes["nombre_archivo"][$indice]);
+                    //     }
+                    // }
                     // var_dump($arrSolicitudes);
                     // die;
                     $response = crearRespuestaSolicitud(200, "OK", "Se recuperaron las solicitudes", $arrSolicitudes);

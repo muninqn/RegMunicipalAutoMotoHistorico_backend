@@ -45,7 +45,6 @@ class VecinoService
     }
     public function obtenerDatosVecino($params){
         $sqlQuery = "SELECT telefonoAlternativo,emailAlternativo FROM RMAMH_Vecino WHERE wap_persona=?";
-
         $bindParams = [$params['wap_persona']];
 
         $database = new BaseDatos;

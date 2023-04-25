@@ -95,14 +95,15 @@ function getDireccionArchivoAdjunto($nombreProyecto, $nombreArchivo, $idSolicitu
 
     if (PATH_FILE_LOCAL) {
         $target_path_local = $idSolicitud != null
-            ? "../../../projects_files/" . $nombreProyecto . "/" . $idSolicitud . "/"
-            : "../../../projects_files/" . $nombreProyecto . "/nodeberiapasar/" . $idSolicitud . "/";
+            ? URL_FILE_LOCAL . $nombreProyecto . "/" . $idSolicitud . "/"
+            : URL_FILE_LOCAL . $nombreProyecto . "/nodeberiapasar/" . $idSolicitud . "/";
     } else {
         $target_path_local = $idSolicitud != null
             ? PATH_FILE_SERVER . $nombreProyecto . "/" . $idSolicitud . "/"
             : PATH_FILE_SERVER . $nombreProyecto . "/nodeberiapasar/" . $idSolicitud . "/";
     }
-
+    // var_dump($target_path_local);
+    // die;
     if (!file_exists($target_path_local)) {
         mkdir($target_path_local, 0755, true);
     };

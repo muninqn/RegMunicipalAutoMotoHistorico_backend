@@ -1,6 +1,7 @@
 <?php
 class SolicitudService
 {
+    //SE DEJA DE USAR YA QUE NO SE PIDE MAS SELLADO MUNICIPAL
     public function verificarSiNumeroReciboExiste($numeroRecibo){
         $sqlQuery = "SELECT numero_recibo, id_solicitud
         FROM RMAMH_Solicitud
@@ -23,8 +24,10 @@ class SolicitudService
         $params['partes_no_originales'] = ($params['partes_no_originales'] === "null" || $params['partes_no_originales'] === "") ? null : $params['partes_no_originales'];
         $params["esEmpresa"]=($params["esEmpresa"] === 'false')?0:true;
 
-        $sqlQuery = "INSERT INTO RMAMH_Solicitud (vecino_id, estado_id, marca, tipo, modelo, motor, chasis, fecha_fabricacion, caracteristicas_historia, otros, partes_no_originales,esEmpresa,numero_recibo) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)";
-        $bindParams = [$params['vecino_id'], $estadoInicial, $params['marca'], $params['tipo'], $params['modelo'], $params['motor'], $params['chasis'], $params['fecha_fabricacion'], $params['caracteristicas_historia'], $params['otros'], $params['partes_no_originales'], $params["esEmpresa"],$params["numero_recibo"]];
+        // $sqlQuery = "INSERT INTO RMAMH_Solicitud (vecino_id, estado_id, marca, tipo, modelo, motor, chasis, fecha_fabricacion, caracteristicas_historia, otros, partes_no_originales,esEmpresa,numero_recibo) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)";
+        $sqlQuery = "INSERT INTO RMAMH_Solicitud (vecino_id, estado_id, marca, tipo, modelo, motor, chasis, fecha_fabricacion, caracteristicas_historia, otros, partes_no_originales,esEmpresa) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)";
+        $bindParams = [$params['vecino_id'], $estadoInicial, $params['marca'], $params['tipo'], $params['modelo'], $params['motor'], $params['chasis'], $params['fecha_fabricacion'], $params['caracteristicas_historia'], $params['otros'], $params['partes_no_originales'], $params["esEmpresa"]];
+        // $bindParams = [$params['vecino_id'], $estadoInicial, $params['marca'], $params['tipo'], $params['modelo'], $params['motor'], $params['chasis'], $params['fecha_fabricacion'], $params['caracteristicas_historia'], $params['otros'], $params['partes_no_originales'], $params["esEmpresa"],$params["numero_recibo"]];
 
         $database = new BaseDatos;
         $database->connect();
@@ -106,6 +109,7 @@ class SolicitudService
         return $response;
     }
 
+    //DEJO DE USARSE, CUNADO PIDIERON QUE SE QUITE EL SELLADO MUNICIPAL 25/04/2023
     public function insertPathAdjuntos($params, $indice,$nombreArchivo)
     {   
         $tbAdjuntos=TB_RMAMH_Archivos;
@@ -122,7 +126,7 @@ class SolicitudService
             return $database->ejecutarSqlUpdateDelete($sqlQuery, $bindParams);
         }
     }
-
+    //DEJO DE USARSE, CUNADO PIDIERON QUE SE QUITE EL SELLADO MUNICIPAL 25/04/2023
     public function updatePathAdjuntos($params, $indice,$nombreArchivo)
     {   
         $tbAdjuntos=TB_RMAMH_Archivos;
