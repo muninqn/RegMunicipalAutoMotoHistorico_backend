@@ -57,21 +57,21 @@ class FilesController extends BaseController
 
             if (array_key_exists("esEdicion", $params)) {
                 //numero_recibo
-                $elNumeroReciboPertenceOtraSolicitud=false;
-                if (array_key_exists("numero_recibo", $params)) {
-                    $numeroReciboExistente = $objServiceSolicitud->verificarSiNumeroReciboExiste($params["numero_recibo"]);
-                    // var_dump($numeroReciboExistente);
-                    // var_dump($params["id_solicitud"]);
-                    if (isset($numeroReciboExistente)) {
-                        if (!($numeroReciboExistente["id_solicitud"] === $params["id_solicitud"])) {
-                           $elNumeroReciboPertenceOtraSolicitud=true; 
-                        }
-                    }
-                }
+                // $elNumeroReciboPertenceOtraSolicitud=false;
+                // if (array_key_exists("numero_recibo", $params)) {
+                //     $numeroReciboExistente = $objServiceSolicitud->verificarSiNumeroReciboExiste($params["numero_recibo"]);
+                //     // var_dump($numeroReciboExistente);
+                //     // var_dump($params["id_solicitud"]);
+                //     if (isset($numeroReciboExistente)) {
+                //         if (!($numeroReciboExistente["id_solicitud"] === $params["id_solicitud"])) {
+                //            $elNumeroReciboPertenceOtraSolicitud=true; 
+                //         }
+                //     }
+                // }
                 // var_dump($elNumeroReciboPertenceOtraSolicitud);
                 // die;
                 // $datosVecino = $objServiceVecino->obtenerIdVecino($params);
-                if (!$elNumeroReciboPertenceOtraSolicitud) {
+                // if (!$elNumeroReciboPertenceOtraSolicitud) {
 
                     if (isset($datosVecino)) {
                         $updateVecino = $objServiceVecino->updateVecino($params);
@@ -107,19 +107,19 @@ class FilesController extends BaseController
                                             $archivos = $objService->subirArchivoServidor($value['tmp_name'], $value['type'], $value['size'], $filePathSolicitud);
                                             $arrPath[$key] = $nombreArchivo;
                                             $params[$key] = $nombreArchivo;
-                                            if ($archivos) {
-                                                if ($key === "path_sellado") {
-                                                    if (array_key_exists("id_$key", $params)) {
-                                                        //update archivo adjundo sellado
-                                                        $objServiceSolicitud->updatePathAdjuntos($params, $key, $nombreArchivo);
-                                                    } else {
-                                                        //insert archivo adjunto
-                                                        $objServiceSolicitud->insertPathAdjuntos($params, $key, $nombreArchivo);
-                                                    }
-                                                }
-                                            } else {
-                                                break;
-                                            }
+                                            // if ($archivos) {
+                                            //     if ($key === "path_sellado") {
+                                            //         if (array_key_exists("id_$key", $params)) {
+                                            //             //update archivo adjundo sellado
+                                            //             $objServiceSolicitud->updatePathAdjuntos($params, $key, $nombreArchivo);
+                                            //         } else {
+                                            //             //insert archivo adjunto
+                                            //             $objServiceSolicitud->insertPathAdjuntos($params, $key, $nombreArchivo);
+                                            //         }
+                                            //     }
+                                            // } else {
+                                            //     break;
+                                            // }
                                             //Actualizar path de archivos en solicitud por cada archivo armar array de paths y update todo de una
                                         }
                                         // var_dump("se rompe?");
@@ -170,13 +170,13 @@ class FilesController extends BaseController
                     } else {
                         $response = crearRespuestaSolicitud(400, "error", "El usuario no existe");
                     }
-                } else {
-                    $response = crearRespuestaSolicitud(400, "error", "El numero de recibo que ha ingresado ya se encuentra registrado.");
-                }
+                // } else {
+                //     $response = crearRespuestaSolicitud(400, "error", "El numero de recibo que ha ingresado ya se encuentra registrado.");
+                // }
 
             } else {
-                $numeroReciboExistente = $objServiceSolicitud->verificarSiNumeroReciboExiste($params["numero_recibo"]);
-                if (!isset($numeroReciboExistente)) {
+                // $numeroReciboExistente = $objServiceSolicitud->verificarSiNumeroReciboExiste($params["numero_recibo"]);
+                // if (!isset($numeroReciboExistente)) {
 
 
                     $tamaño = $objService->validarSizeArchivos($_FILES);
@@ -215,11 +215,11 @@ class FilesController extends BaseController
                                         //$nombreArchivo = "licencia_" . $this->getIdTramite() . "_" . $params['descripcionArchivo'];
                                         $filePathSolicitud = getDireccionArchivoAdjunto("RMAMH", $nombreArchivo, $idSolicitud);
                                         $objService->subirArchivoServidor($value['tmp_name'], $value['type'], $value['size'], $filePathSolicitud);
-                                        if ($key === "path_sellado") {
-                                            $objServiceSolicitud->insertPathAdjuntos($params, $key, $nombreArchivo);
-                                        } else {
+                                        // if ($key === "path_sellado") {
+                                        //     $objServiceSolicitud->insertPathAdjuntos($params, $key, $nombreArchivo);
+                                        // } else {
                                             $arrPath[$key] = $nombreArchivo;
-                                        }
+                                        // }
                                         //Actualizar path de archivos en solicitud por cada archivo armar array de paths y update todo de una
                                     }
 
@@ -242,9 +242,9 @@ class FilesController extends BaseController
 
                         $response = crearRespuestaSolicitud(400, "error", $tamaño);
                     }
-                } else {
-                    $response = crearRespuestaSolicitud(400, "error","El numero de recibo que ha ingresado ya se encuentra registrado.");
-                }
+                // } else {
+                //     $response = crearRespuestaSolicitud(400, "error","El numero de recibo que ha ingresado ya se encuentra registrado.");
+                // }
             }
         } else {
             //No se utilizo el metodo HTTP correcto

@@ -72,7 +72,7 @@ if (!isset($bodyParamsArray['SESSIONKEY']) || $bodyParamsArray['SESSIONKEY'] == 
                 $controller->setIdWapPersona($userData['referenciaID']);
                 $controller->setRequestMethod($requestMethod);
 
-                $response = $controller->procesarRespuesta($methodName, $bodyParamsArray);
+                $response = $controller->procesarRespuesta($methodName, deutf8ize($bodyParamsArray));
             } else {
                 // Si no existe el metodo, retornamos la respuesta
                 $response = getArrayNotFound("No se especifico que accion ejecutar.");
