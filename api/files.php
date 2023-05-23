@@ -44,7 +44,7 @@ if (!isset($bodyParamsArray['SESSIONKEY']) || $bodyParamsArray['SESSIONKEY'] == 
     //verificamos que el usuario sea un usuario valido y obtenemos sus permisos
     $authController = new AuthController();
     // if (($userData = $authController->getUserData($bodyParamsArray['SESSIONKEY'], (PROD ? 77 : 71))) != null) {
-    if (($userData = $authController->getUserData($bodyParamsArray['SESSIONKEY'])) != null) {
+    if (($userData = $authController->getUserData($bodyParamsArray['SESSIONKEY'],APPID)) != null) {
         //obtenemos los nombres del controller y el metodo desde la url
         $URL = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
         $URL = explode('/', $URL);
@@ -62,7 +62,7 @@ if (!isset($bodyParamsArray['SESSIONKEY']) || $bodyParamsArray['SESSIONKEY'] == 
                 //busca el id del tramite activo por parte del usuario
                 // $objTramiteService = new TramiteService();
                 // $idTramiteUser = $objTramiteService->obtenerIdTramitePersona($userData['referenciaID']);
-
+                // var_dump($userData);
                 if (isset($userData["perfilUsuario"])) {
                     $controller->setPerfilUsuario($userData["perfilUsuario"]);
                 }

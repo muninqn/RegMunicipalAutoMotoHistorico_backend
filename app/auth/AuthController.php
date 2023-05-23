@@ -70,8 +70,10 @@ class AuthController
             ));
             $response = curl_exec($curl);
             curl_close($curl);
-
             $dataUser = json_decode($response, true);
+            if ($dataUser["docInfo"]["referenciaID"] == 0) {
+                $dataUser=null;
+            }
             // if ($response && $usuario['docInfo'] !== null) {
             //     $datos_personales = $usuario['datosPersonales'];
             //     $dataUser["referenciaID"] = $datos_personales["referenciaID"];
