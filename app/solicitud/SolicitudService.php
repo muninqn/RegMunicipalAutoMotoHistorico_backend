@@ -1,7 +1,7 @@
 <?php
 class SolicitudService
 {
-    //SE DEJA DE USAR YA QUE NO SE PIDE MAS SELLADO MUNICIPAL
+    
     public function verificarSiNumeroReciboExiste($numeroRecibo){
         $sqlQuery = "SELECT numero_recibo, id_solicitud
         FROM RMAMH_Solicitud
@@ -13,6 +13,17 @@ class SolicitudService
         $database->connect();
         return $database->ejecutarSqlSelect($sqlQuery, $bindParams);
     }
+
+    public function updateNumeroRecibo($numeroRecibo,$idSolicitud){
+        $sqlQuery = "UPDATE RMAMH_Solicitud SET numero_recibo=? WHERE id_solicitud = ?";
+        //WHERE deleted_at is null
+        $bindParams = [$numeroRecibo,$idSolicitud];
+
+        $database = new BaseDatos;
+        $database->connect();
+        return $database->ejecutarSqlUpdateDelete($sqlQuery, $bindParams);
+    }
+
     public function insertSolicitud($params)
     {
         $estadoInicial = 1;
@@ -115,7 +126,7 @@ class SolicitudService
         $tbAdjuntos=TB_RMAMH_Archivos;
         $sqlQuery = "INSERT INTO $tbAdjuntos (solicitud_id,nombre_archivo,estado_id) VALUES (?,?,?)";
         $bindParams = [];
-        if ($indice === "path_sellado") {
+        if ($indice === "path_sellado" || $indice === "path_foto_perfil") {
             array_push($bindParams, $params["id_solicitud"]);
             array_push($bindParams, $nombreArchivo);
             array_push($bindParams, 1);
@@ -132,7 +143,7 @@ class SolicitudService
         $tbAdjuntos=TB_RMAMH_Archivos;
         $sqlQuery = "UPDATE $tbAdjuntos SET nombre_archivo=?";
         $bindParams = [];
-        if ($indice === "path_sellado") {
+        if ($indice === "path_sellado" || $indice == "path_foto_perfil") {
             $sqlQuery.=" WHERE solicitud_id=? AND id_archivo=? AND deleted_at IS NULL";
             array_push($bindParams, $nombreArchivo);
             array_push($bindParams, $params["id_solicitud"]);

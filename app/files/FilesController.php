@@ -34,7 +34,7 @@ class FilesController extends BaseController
     {
         // var_dump($params);
         // var_dump($_FILES);
-        // die;
+        // exit;
         if ($this->getRequestMethod() == "POST") {
 
             $objService = new FilesService;
@@ -107,19 +107,19 @@ class FilesController extends BaseController
                                             $archivos = $objService->subirArchivoServidor($value['tmp_name'], $value['type'], $value['size'], $filePathSolicitud);
                                             $arrPath[$key] = $nombreArchivo;
                                             $params[$key] = $nombreArchivo;
-                                            // if ($archivos) {
-                                            //     if ($key === "path_sellado") {
-                                            //         if (array_key_exists("id_$key", $params)) {
-                                            //             //update archivo adjundo sellado
-                                            //             $objServiceSolicitud->updatePathAdjuntos($params, $key, $nombreArchivo);
-                                            //         } else {
-                                            //             //insert archivo adjunto
-                                            //             $objServiceSolicitud->insertPathAdjuntos($params, $key, $nombreArchivo);
-                                            //         }
-                                            //     }
-                                            // } else {
-                                            //     break;
-                                            // }
+                                            if ($archivos) {
+                                                if ($key === "path_sellado" || $key == "path_foto_perfil") {
+                                                    if (array_key_exists("id_$key", $params)) {
+                                                        //update archivo adjundo sellado
+                                                        $objServiceSolicitud->updatePathAdjuntos($params, $key, $nombreArchivo);
+                                                    } else {
+                                                        //insert archivo adjunto
+                                                        $objServiceSolicitud->insertPathAdjuntos($params, $key, $nombreArchivo);
+                                                    }
+                                                }
+                                            } else {
+                                                break;
+                                            }
                                             //Actualizar path de archivos en solicitud por cada archivo armar array de paths y update todo de una
                                         }
                                         // var_dump("se rompe?");
@@ -218,8 +218,13 @@ class FilesController extends BaseController
                                         // if ($key === "path_sellado") {
                                         //     $objServiceSolicitud->insertPathAdjuntos($params, $key, $nombreArchivo);
                                         // } else {
-                                            $arrPath[$key] = $nombreArchivo;
+                                            // $arrPath[$key] = $nombreArchivo;
                                         // }
+                                        if ($key === "path_foto_perfil") {
+                                            $objServiceSolicitud->insertPathAdjuntos($params, $key, $nombreArchivo);
+                                        } else {
+                                            $arrPath[$key] = $nombreArchivo;
+                                        }
                                         //Actualizar path de archivos en solicitud por cada archivo armar array de paths y update todo de una
                                     }
 

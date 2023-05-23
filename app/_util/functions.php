@@ -135,8 +135,8 @@ function obtenerExtensionArchivo($fileType)
     return $extension;
 }
 /* Funcion que recibe el base64 del archivo y retorna */
-function obtenerArchivo($fileType,$idSolicitud)
-{   
+function obtenerArchivo($fileType, $idSolicitud)
+{
     $fileExtension = pathinfo($fileType, PATHINFO_EXTENSION);
 
     // Definimos el tipo de archivo
@@ -147,16 +147,16 @@ function obtenerArchivo($fileType,$idSolicitud)
     }
 
     // Obtenemos el archivo y lo convertimos a base64
-    
-    if (!(str_contains($fileType,"RMAMH"))) {
+
+    if (!(str_contains($fileType, "RMAMH"))) {
         if (PATH_FILE_LOCAL) {
-            $fileType="../../../projects_files/RMAMH/".$idSolicitud."/".$fileType;
-        }else{
-            $fileType=PATH_FILE_SERVER . "RMAMH/".$idSolicitud."/".$fileType;
+            $fileType = "../../../projects_files/RMAMH/" . $idSolicitud . "/" . $fileType;
+        } else {
+            $fileType = PATH_FILE_SERVER . "RMAMH/" . $idSolicitud . "/" . $fileType;
         }
     }
 
-    
+
     $fileData = file_get_contents($fileType);
     $base64File = "data:$fileMimeType;base64," . base64_encode($fileData);
     return $base64File;
@@ -255,30 +255,42 @@ function sumarEjeDatosY($original)
     return $valor;
 }
 
-function verificarImagenRennaper($documento,$genero){
+function verificarImagenRennaper($documento, $genero)
+{
     if ($genero === "M") {
-        $carpeta="MASCULINO";
-    }else{
+        $carpeta = "MASCULINO";
+    } else {
         if ($genero === "F") {
-            $carpeta="FEMENINO";
-        }else{
+            $carpeta = "FEMENINO";
+        } else {
             if (PATH_FILE_LOCAL) {
-                $carpeta="NO%20BINARIO";
-            }else{
-                $carpeta="NO BINARIO";
+                $carpeta = "NO%20BINARIO";
+            } else {
+                $carpeta = "NO BINARIO";
             }
-        }   
+        }
     }
-    
+
     if (PATH_FILE_LOCAL) {
-        $direccionAConsultar="https://weblogin.muninqn.gov.ar/DataServerOK/webRenaper/";
-    }else {
+        $direccionAConsultar = "https://weblogin.muninqn.gov.ar/DataServerOK/webRenaper/";
+    } else {
         if (PROD) {
-            $direccionAConsultar="E:/Dataserver/Produccion/webRenaper/";
-        }else{
-            $direccionAConsultar="E:/Dataserver/Replica/webRenaper/";
+            $direccionAConsultar = "E:/Dataserver/Produccion/webRenaper/";
+        } else {
+            $direccionAConsultar = "E:/Dataserver/Replica/webRenaper/";
         }
     }
     $arrContextOptions = array("ssl" => array("verify_peer" => false, "verify_peer_name" => false,),);
-    return @file_get_contents($direccionAConsultar.$carpeta."/".$genero.$documento.".png", false, stream_context_create($arrContextOptions));
+    return @file_get_contents($direccionAConsultar . $carpeta . "/" . $genero . $documento . ".png", false, stream_context_create($arrContextOptions));
+}
+
+function encrypt($string)
+{
+    $count = 4;
+    $str=$string;
+    for ($i = 0; $i < $count; $i++) {
+
+        $str = base64_encode($str);
+    }
+    return $str;
 }
