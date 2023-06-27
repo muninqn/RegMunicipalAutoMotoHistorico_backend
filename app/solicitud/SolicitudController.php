@@ -148,6 +148,68 @@ class SolicitudController extends BaseController
         }
         return $response;
     }
+    private function cambioTitularidad($params)
+    {
+        if ($this->getRequestMethod() == "POST") {
+            if (!array_key_exists("solicitud",$params) || !array_key_exists("wap_persona",$params) || !isset($params["solicitud"]) || !isset($params["wap_persona"])) {
+                return crearRespuestaSolicitud(400, "error", "Falta especificar parámetros.");
+            }
+            // var_dump(isset($params["emailAlternativo"]));
+            // var_dump(isset($params["telefonoAlternativo"]));
+            // var_dump($params);
+            $objServiceVecino = new VecinoService;
+            $datosVecino = $objServiceVecino->obtenerIdVecino($params);
+            // var_dump($datosVecino);
+            if (!isset($datosVecino)) {
+                // echo "Insert";
+                $idVecino = $objServiceVecino->insertVecino($params);
+            } else {
+                // echo "Update";
+                $idVecino = $datosVecino["id_vecino"];
+                $params['id_vecino']=$idVecino;
+                $cambioVecino = $objServiceVecino->updateVecino($params);
+                // var_dump($cambioVecino);
+                // exit;
+                if (!($cambioVecino > 0)) {
+                    return crearRespuestaSolicitud(400, "error", "Fallo en actualizar el vecino.");
+                }
+            }
+            if ($idVecino > 0) {
+                $objServiceSolicitud = new SolicitudService;
+                $updateVecinoSolicitud = $objServiceSolicitud->updateVecinoSolicitud($params["solicitud"],$idVecino);
+                if ($updateVecinoSolicitud > 0) {
+                    $response = crearRespuestaSolicitud(200, "OK", "El cambio de titularidad se realizo correctamente.");
+                }else{
+                    $response = crearRespuestaSolicitud(400, "error", "Fallo en actualizar la solicitud.");
+                }
+            }else{
+                $response = crearRespuestaSolicitud(400, "error", "Fallo en actualizar el vecino.");
+            }
+            // exit;
+            // $objService = new SolicitudService;
+            // $objBaseService = new BaseService;
+            // $params["id_solicitud"] = $params["solicitud"];
+            // $datosSolicitud = $objService->selectSolicitudPorID($params);
+            // $datosSolicitud["nombre"] = $datosSolicitud["Nombre"];
+            // $datosSolicitud["email"] = $datosSolicitud["CorreoElectronico"];
+            // // if ($objBaseService->gestionarEnvioMail($datosSolicitud, $params["estado"])) {
+            // $estadoSolicitud = $objService->updateEstadoSolcitud($params);
+            // if ($estadoSolicitud != 0) {
+            //     $objService->insertOperacion($params["solicitud"], $this->getIdWapPersona(), 6);
+            //     $response = crearRespuestaSolicitud(200, "OK", "Se Aprobó la Documentacion Correctamente.", $estadoSolicitud);
+            //     $objBaseService->gestionarEnvioMail($datosSolicitud, $params["estado"]);
+            // } else {
+            //     $response = crearRespuestaSolicitud(400, "Error", "No se ha podido aprobar la Documentacion de la solicitud.");
+            // }
+            // $response['headers'] = ['HTTP/1.1 200 OK'];
+            // // } else {
+            // //     $response = crearRespuestaSolicitud(400, "Error", "No se pudo enviar email");
+            // // }
+        } else {
+            $response = crearRespuestaSolicitud(400, "error", "Metodo HTTP equivocado.");
+        }
+        return $response;
+    }
 
     private function aprobarSolicitud($params)
     {
@@ -417,6 +479,7 @@ class SolicitudController extends BaseController
                 $objServiceSolicitud = new SolicitudService;
                 $objService = new FilesService;
                 $numeroReciboExistente = $objServiceSolicitud->verificarSiNumeroReciboExiste($params["numero_recibo"]);
+                
                 if (!isset($numeroReciboExistente)) {
                     $tamaño = $objService->validarSizeArchivos($_FILES);
                     $extension = $objService->validarExtensionArchivos($_FILES);
@@ -457,7 +520,7 @@ class SolicitudController extends BaseController
                         $response = crearRespuestaSolicitud(400, "error", $tamaño);
                     }
                 } else {
-                    $response = crearRespuestaSolicitud(400, "error", "El numero de recibo que ha ingresado ya se encuentra registrado.En la solicitud:" . $numeroReciboExistente["id_solicitud"]);
+                    $response = crearRespuestaSolicitud(400, "error", "El numero de recibo que ha ingresado ya se encuentra registrado. En la solicitud:" . $numeroReciboExistente["id_solicitud"]);
                 }
             } else {
                 $response = crearRespuestaSolicitud(400, "error", "No tiene permisos.");
