@@ -4,15 +4,15 @@ class VecinoService
 {
     public function insertVecino($params)
     {
-        $params['urlFoto']=($params['urlFoto']==="null")?null:$params['urlFoto'];
+        // $params['urlFoto']=($params['urlFoto']==="null")?null:$params['urlFoto'];
         $params['telefonoAlternativo']=($params['telefonoAlternativo']==="null")?null:$params['telefonoAlternativo'];
         $params['emailAlternativo']=($params['emailAlternativo']==="null")?null:$params['emailAlternativo'];
         if (array_key_exists('fotoUsuario_id',$params)) {
-            $sqlQuery = "INSERT INTO RMAMH_Vecino (wap_persona, url_foto, codigo_postal, provincia, ciudad, domicilio,telefonoAlternativo,emailAlternativo,fotoUsuario_id) VALUES(?,?,?,?,?,?,?,?,?)";
-            $bindParams = [$params['wap_persona'], $params['urlFoto'], $params['codigoPostal'], $params['provincia'], $params['ciudad'], $params['domicilio'],$params['telefonoAlternativo'],$params['emailAlternativo'],$params['fotoUsuario_id']];
+            $sqlQuery = "INSERT INTO RMAMH_Vecino (wap_persona, codigo_postal, provincia, ciudad, domicilio,telefonoAlternativo,emailAlternativo,fotoUsuario_id) VALUES(?,?,?,?,?,?,?,?)";
+            $bindParams = [$params['wap_persona'], $params['codigoPostal'], $params['provincia'], $params['ciudad'], $params['domicilio'],$params['telefonoAlternativo'],$params['emailAlternativo'],$params['fotoUsuario_id']];
         }else{
-            $sqlQuery = "INSERT INTO RMAMH_Vecino (wap_persona, url_foto, codigo_postal, provincia, ciudad, domicilio,telefonoAlternativo,emailAlternativo) VALUES(?,?,?,?,?,?,?,?)";
-            $bindParams = [$params['wap_persona'], $params['urlFoto'], $params['codigoPostal'], $params['provincia'], $params['ciudad'], $params['domicilio'],$params['telefonoAlternativo'],$params['emailAlternativo']];
+            $sqlQuery = "INSERT INTO RMAMH_Vecino (wap_persona, codigo_postal, provincia, ciudad, domicilio,telefonoAlternativo,emailAlternativo) VALUES(?,?,?,?,?,?,?)";
+            $bindParams = [$params['wap_persona'], $params['codigoPostal'], $params['provincia'], $params['ciudad'], $params['domicilio'],$params['telefonoAlternativo'],$params['emailAlternativo']];
         }
 
 
