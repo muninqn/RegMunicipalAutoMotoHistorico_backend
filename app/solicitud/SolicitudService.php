@@ -427,4 +427,14 @@ class SolicitudService
         $database->connect();
         return $database->ejecutarSqlInsert($sqlQuery, $bindParams);
     }
+
+    public function updateVecinoSolicitud($idSolicitud,$idVecino){
+        $sqlQuery = "UPDATE RMAMH_Solicitud SET vecino_id=? WHERE id_solicitud = ? AND deleted_at IS NULL";
+        //WHERE deleted_at is null
+        $bindParams = [$idVecino,$idSolicitud];
+
+        $database = new BaseDatos;
+        $database->connect();
+        return $database->ejecutarSqlUpdateDelete($sqlQuery, $bindParams);
+    }
 }
