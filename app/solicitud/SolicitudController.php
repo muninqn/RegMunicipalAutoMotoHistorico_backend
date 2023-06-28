@@ -103,19 +103,19 @@ class SolicitudController extends BaseController
                         $arrSolicitudes["credencial"] = $this->getCredencial($params["SESSIONKEY"], utf8ize($arrayDatosCredencial));
                     }
                     
-                    http_response_code(200);
-                    $response = crearRespuestaSolicitud(200, "OK", "Se recuperaro la solicitud", $arrSolicitudes);
+                    // http_response_code(200);
+                    $response = crearRespuestaSolicitud(200, "OK", "Se recuperaron la solicitud", $arrSolicitudes);
                 } else {
-                    http_response_code(400);
+                    // http_response_code(400);
                     $response = crearRespuestaSolicitud(400, "Error", "No existe la solicitud", $arrSolicitudes);
                 }
                 // $response['headers'] = ['HTTP/1.1 400 Error'];
             } else {
-                http_response_code(400);
+                // http_response_code(400);
                 $response = crearRespuestaSolicitud(400, "error", "Falta especificar parametro id_solicitud.");
             }
         } else {
-            http_response_code(400);
+            // http_response_code(400);
             $response = crearRespuestaSolicitud(400, "error", "Metodo HTTP equivocado.");
         }
         return $response;
