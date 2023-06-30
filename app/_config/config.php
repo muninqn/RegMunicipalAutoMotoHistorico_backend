@@ -46,6 +46,7 @@ define('PATH_FILE_SERVER', $_ENV['PROD'] == 'true' ? "E:/Dataserver/Produccion/p
 define('TB_RMAMH_Solicitud', $_ENV['TB_RMAMH_Solicitud']); 
 define('TB_RMAMH_Archivos', $_ENV['TB_RMAMH_Archivos']); 
 define('TB_RMAMH_Vecino', $_ENV['TB_RMAMH_Vecino']); 
+define('TB_RMAMH_CambioTitular', $_ENV['TB_RMAMH_CambioTitular']); 
 /* Configuración de tablas (Ejemplos) */
 /*define('USUARIOS', $_ENV['DB_USUARIOS_TABLE']);
 define('SOLICITUDES', $_ENV['DB_SOLICITUDES_TABLE']);

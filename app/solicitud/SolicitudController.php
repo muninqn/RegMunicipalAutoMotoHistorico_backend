@@ -32,8 +32,18 @@ class SolicitudController extends BaseController
             $objService = new SolicitudService;
             $arrSolicitudes = $objService->selectSolicitudes();
             if (isset($arrSolicitudes)) {
+                
+                $cambioTitularidad=$objService->getCambiosTitularidad();
                 foreach ($arrSolicitudes as $key => $value) {
                     $arrSolicitudes[$key]["created_at"] = date("d-m-Y", strtotime($value["created_at"]));
+                    $arrSolicitudes[$key]["cambio_titular"]=[];
+                    if (isset($cambioTitularidad)) {
+                        foreach ($cambioTitularidad as $claveCambioTitular => $unCambioTitular) {
+                            if ($unCambioTitular["solicitud_id"] == $value["id_solicitud"]) {
+                                array_push($arrSolicitudes[$key]["cambio_titular"],$unCambioTitular);
+                            }
+                        }
+                    }
                 }
                 $response = crearRespuestaSolicitud(200, "OK", "Se recuperaron las solicitudes", $arrSolicitudes);
             } else {
@@ -52,6 +62,9 @@ class SolicitudController extends BaseController
                 $objService = new SolicitudService;
                 $arrSolicitudes = $objService->selectSolicitudPorID($params);
                 if (isset($arrSolicitudes)) {
+                    $cambioTitularidad=$objService->getCambiosTitularidadSolicitudID($params['id_solicitud']);
+                    $arrSolicitudes["cambio_titular"]=$cambioTitularidad;
+
                     $adjuntos = $objService->selectAdjuntosSolicitudPorID($params);
                     $arrSolicitudes["nombre_archivo"] = (count($adjuntos) > 0) ? $adjuntos : null;
                     if ($arrSolicitudes["FechaNacimiento"]) {
@@ -86,7 +99,7 @@ class SolicitudController extends BaseController
                     // die;
                     // $response['headers'] = ['HTTP/1.1 200 OK'];
                     $arrSolicitudes["credencial"] = null;
-                    if (array_key_exists("SESSIONKEY",$params) && $arrSolicitudes["estado_id"] == 2) {
+                    if (array_key_exists("SESSIONKEY", $params) && $arrSolicitudes["estado_id"] == 2) {
 
                         $arrayDatosCredencial["idSolicitud"] = $arrSolicitudes["id_solicitud"];
                         $arrayDatosCredencial["tituloCredencial"] = "REGISTRO DE VEHÍCULOS HISTÓRICOS";
@@ -99,10 +112,10 @@ class SolicitudController extends BaseController
                         $arrayDatosCredencial["chasis"] = $arrSolicitudes["chasis"];
                         // var_dump(encrypt($arrSolicitudes["id_solicitud"]));
                         // exit;
-                        $arrayDatosCredencial["urlQR"] = "https://weblogin.muninqn.gov.ar/apps/RegMunicipalAutoMotoHistorico/solicitud.html?solicitud=". encrypt($arrSolicitudes["id_solicitud"]);
+                        $arrayDatosCredencial["urlQR"] = "https://weblogin.muninqn.gov.ar/apps/RegMunicipalAutoMotoHistorico/solicitud.html?solicitud=" . encrypt($arrSolicitudes["id_solicitud"]);
                         $arrSolicitudes["credencial"] = $this->getCredencial($params["SESSIONKEY"], utf8ize($arrayDatosCredencial));
                     }
-                    
+
                     // http_response_code(200);
                     $response = crearRespuestaSolicitud(200, "OK", "Se recuperaron la solicitud", $arrSolicitudes);
                 } else {
@@ -151,13 +164,14 @@ class SolicitudController extends BaseController
     private function cambioTitularidad($params)
     {
         if ($this->getRequestMethod() == "POST") {
-            if (!array_key_exists("solicitud",$params) || !array_key_exists("wap_persona",$params) || !isset($params["solicitud"]) || !isset($params["wap_persona"])) {
+            if (!array_key_exists("solicitud", $params) || !array_key_exists("wap_persona", $params) || !isset($params["solicitud"]) || !isset($params["wap_persona"])) {
                 return crearRespuestaSolicitud(400, "error", "Falta especificar parámetros.");
             }
             // var_dump(isset($params["emailAlternativo"]));
             // var_dump(isset($params["telefonoAlternativo"]));
             // var_dump($params);
             $objServiceVecino = new VecinoService;
+            $objServiceSolicitud = new SolicitudService;
             $datosVecino = $objServiceVecino->obtenerIdVecino($params);
             // var_dump($datosVecino);
             if (!isset($datosVecino)) {
@@ -166,7 +180,7 @@ class SolicitudController extends BaseController
             } else {
                 // echo "Update";
                 $idVecino = $datosVecino["id_vecino"];
-                $params['id_vecino']=$idVecino;
+                $params['id_vecino'] = $idVecino;
                 $cambioVecino = $objServiceVecino->updateVecino($params);
                 // var_dump($cambioVecino);
                 // exit;
@@ -174,15 +188,22 @@ class SolicitudController extends BaseController
                     return crearRespuestaSolicitud(400, "error", "Fallo en actualizar el vecino.");
                 }
             }
+
             if ($idVecino > 0) {
-                $objServiceSolicitud = new SolicitudService;
-                $updateVecinoSolicitud = $objServiceSolicitud->updateVecinoSolicitud($params["solicitud"],$idVecino);
+                $vecinoHistorico = $objServiceSolicitud->obtenerVecinoSolicitud($params["solicitud"]);
+                if (isset($vecinoHistorico)) {
+                    // $paramsAnteriores = ['id_solicitud'=>$params["solicitud"],'cambio_titularidad'=>$vecinoHistorico["wap_persona"]];
+                    // $paramsNuevos = ['id_solicitud'=>$params["solicitud"],'cambio_titularidad'=>$params['wap_persona'],'wp_admin'=>$this->getIdWapPersona()];
+                    $objServiceSolicitud->insertSolicitudCambioTitular($params["solicitud"],$vecinoHistorico["wap_persona"],$params['wap_persona'],$this->getIdWapPersona());
+                }
+
+                $updateVecinoSolicitud = $objServiceSolicitud->updateVecinoSolicitud($params["solicitud"], $idVecino);
                 if ($updateVecinoSolicitud > 0) {
                     $response = crearRespuestaSolicitud(200, "OK", "El cambio de titularidad se realizo correctamente.");
-                }else{
+                } else {
                     $response = crearRespuestaSolicitud(400, "error", "Fallo en actualizar la solicitud.");
                 }
-            }else{
+            } else {
                 $response = crearRespuestaSolicitud(400, "error", "Fallo en actualizar el vecino.");
             }
             // exit;
@@ -479,7 +500,7 @@ class SolicitudController extends BaseController
                 $objServiceSolicitud = new SolicitudService;
                 $objService = new FilesService;
                 $numeroReciboExistente = $objServiceSolicitud->verificarSiNumeroReciboExiste($params["numero_recibo"]);
-                
+
                 if (!isset($numeroReciboExistente)) {
                     $tamaño = $objService->validarSizeArchivos($_FILES);
                     $extension = $objService->validarExtensionArchivos($_FILES);
